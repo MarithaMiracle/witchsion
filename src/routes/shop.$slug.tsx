@@ -93,7 +93,7 @@ function ProductPage() {
                 Suggested use
               </div>
               <ul className="font-serif mt-3 list-disc space-y-1 pl-5 italic">
-                {product.use.map((u) => (
+                {product.use.map((u: string) => (
                   <li key={u}>{u}</li>
                 ))}
               </ul>
