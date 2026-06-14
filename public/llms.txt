@@ -1,0 +1,12 @@
+# Witchsion
+
+> A witch on a mission. Hand-charged oils, spell jars, spiritual baths, smudge, crystals and consultations — offered as spiritual, cultural and entertainment practice.
+
+Witchsion is a modern spiritual brand offering ritual products and reflective consultations to anyone, regardless of age, status, race, religion or ethnicity. All offerings are presented as cultural and entertainment practice; no supernatural outcomes are guaranteed.
+
+## Pages
+- [Home](/): brand overview, featured categories, consultations
+- [Shop](/shop): full apothecary catalogue — oils, spell jars, baths, soaps, smudge, incense, crystals
+- [Consultations](/book): tarot readings, spiritual guidance and spell-work consultations
+- [About](/about): the Witchsion mission and practice
+- [How To Order](/how-to-order): ordering, payment and shipping
