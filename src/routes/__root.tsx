@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Witchsion — A Witch on a Mission" },
+      { name: "description", content: "Aura Bloom is a spiritual e-commerce, booking, and community platform with AI-powered concierge services." },
+      { property: "og:description", content: "Aura Bloom is a spiritual e-commerce, booking, and community platform with AI-powered concierge services." },
+      { name: "twitter:description", content: "Aura Bloom is a spiritual e-commerce, booking, and community platform with AI-powered concierge services." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5e2dd8d9-4a64-48a7-af36-536afc991391/id-preview-64b5d77c--4e951005-4a65-4bb9-8d90-825c5a6dce56.lovable.app-1781474487048.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5e2dd8d9-4a64-48a7-af36-536afc991391/id-preview-64b5d77c--4e951005-4a65-4bb9-8d90-825c5a6dce56.lovable.app-1781474487048.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
