@@ -1,9 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { Minus, Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 
 import { productBySlug, products, formatPrice } from "@/lib/catalog";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/shop/$slug")({
   loader: ({ params }) => {
@@ -42,6 +42,7 @@ export const Route = createFileRoute("/shop/$slug")({
 function ProductPage() {
   const { product } = Route.useLoaderData();
   const [qty, setQty] = useState(1);
+  const { add } = useCart();
 
   const related = products
     .filter((p) => p.categorySlug === product.categorySlug && p.slug !== product.slug)
@@ -124,12 +125,7 @@ function ProductPage() {
 
             <button
               type="button"
-              onClick={() =>
-                toast.success("Saved to your bag", {
-                  description:
-                    "Checkout opens once payments go live. We'll keep this for you.",
-                })
-              }
+              onClick={() => add(product, qty)}
               className="flex-1 bg-foreground px-6 py-4 text-xs uppercase tracking-[0.2em] text-background transition-opacity hover:opacity-90"
             >
               Add to bag
