@@ -231,9 +231,10 @@ function BookPage() {
 
           <button
             type="submit"
-            className="inline-flex w-full items-center justify-center bg-foreground px-7 py-5 text-xs uppercase tracking-[0.3em] text-background transition-opacity hover:opacity-90 sm:w-auto"
+            disabled={busy}
+            className="inline-flex w-full items-center justify-center bg-foreground px-7 py-5 text-xs uppercase tracking-[0.3em] text-background transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
           >
-            Request session
+            {busy ? "Sending…" : user ? "Request session" : "Sign in & request"}
           </button>
         </form>
 
