@@ -1,12 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format, addDays, startOfDay } from "date-fns";
+import { useServerFn } from "@tanstack/react-start";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { services, formatPrice } from "@/lib/catalog";
+import { useAuth } from "@/lib/auth";
+import { createBooking } from "@/lib/bookings.functions";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
@@ -37,6 +40,15 @@ function BookPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const submitBooking = useServerFn(createBooking);
+
+  useEffect(() => {
+    if (user?.email && !email) setEmail(user.email);
+  }, [user, email]);
 
   const selectedService = useMemo(
     () => services.find((s) => s.slug === serviceSlug)!,
@@ -52,19 +64,44 @@ function BookPage() {
     [],
   );
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!slot || !name || !email) {
       toast.error("Please complete every required field.");
       return;
     }
-    toast.success("Request received", {
-      description: `We'll confirm your ${selectedService.name} on ${days[day].num} at ${slot} by email.`,
-    });
-    setSlot(null);
-    setName("");
-    setEmail("");
-    setNotes("");
+    if (!user && !loading) {
+      navigate({ to: "/auth", search: { redirect: "/book" } });
+      return;
+    }
+    setBusy(true);
+    try {
+      await submitBooking({
+        data: {
+          serviceSlug: selectedService.slug,
+          serviceName: selectedService.name,
+          category: selectedService.category,
+          scheduledDate: format(days[day].date, "yyyy-MM-dd"),
+          scheduledTime: slot,
+          duration: selectedService.duration,
+          price: selectedService.price,
+          currency: selectedService.currency,
+          contactName: name,
+          contactEmail: email,
+          notes: notes || undefined,
+        },
+      });
+      toast.success("Request received", {
+        description: `We'll confirm your ${selectedService.name} on ${days[day].num} at ${slot} by email.`,
+      });
+      setSlot(null);
+      setName("");
+      setNotes("");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Could not save your booking.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
