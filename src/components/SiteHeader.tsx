@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ShoppingBag, User } from "lucide-react";
+import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -12,6 +14,8 @@ const nav = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { count } = useCart();
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl">
@@ -38,14 +42,35 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <button
-          type="button"
-          className="md:hidden text-foreground"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to={user ? "/account" : "/auth"}
+            className="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={user ? "Account" : "Sign in"}
+          >
+            <User size={18} />
+          </Link>
+          <Link
+            to="/cart"
+            className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Bag"
+          >
+            <ShoppingBag size={18} />
+            {count > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ember px-1 text-[10px] font-medium text-ember-foreground">
+                {count}
+              </span>
+            )}
+          </Link>
+          <button
+            type="button"
+            className="md:hidden p-2 text-foreground"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       {open && (
