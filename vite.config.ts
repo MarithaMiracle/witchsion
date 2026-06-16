@@ -3,11 +3,11 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   tanstackStart: {
     server: {
-      entry: "server",
+      entry: "src/server.ts",
     },
     routers: {
       server: {
-        preset: "cloudflare-workers",
+        preset: "cloudflare-pages",
       },
     },
   },
