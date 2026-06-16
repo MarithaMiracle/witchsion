@@ -85,7 +85,7 @@ function BookPage() {
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             sit with the witch
           </span>
-          <h1 className="text-witchy mt-4 text-4xl sm:text-6xl md:text-8xl">consultations</h1>
+          <h1 className="text-witchy mt-4 text-3xl sm:text-5xl md:text-6xl lg:text-8xl">consultations</h1>
           <p className="font-serif mt-6 text-lg italic text-muted-foreground">
             Reading the cards…
           </p>
@@ -151,26 +151,25 @@ function BookPage() {
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             sit with the witch
           </span>
-          <h1 className="text-witchy mt-4 text-4xl sm:text-6xl md:text-8xl">consultations</h1>
-          <p className="font-serif mt-4 max-w-2xl text-lg italic text-muted-foreground">
+          <h1 className="text-witchy mt-4 text-3xl sm:text-5xl md:text-6xl lg:text-8xl">consultations</h1>
+          <p className="font-serif mt-3 max-w-2xl text-pretty text-base italic text-muted-foreground sm:mt-4 sm:text-lg">
             Tarot readings, spiritual guidance and spell-work conversations. Sessions are private and reflective.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-[1.2fr_1fr]">
-        {/* Summary — shown first on mobile so users see their selection while booking */}
-        <aside className="order-first lg:order-none lg:sticky lg:top-20 lg:self-start">
-          <div className="border border-border bg-card/40 p-5 sm:p-8">
+      <section className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-8 overflow-x-clip px-4 py-8 sm:gap-10 sm:px-6 sm:py-12 lg:grid-cols-[1.2fr_1fr] lg:gap-12 lg:py-16">
+        <aside className="order-first min-w-0 lg:order-none lg:sticky lg:top-20 lg:self-start">
+          <div className="w-full min-w-0 border border-border bg-card/40 p-4 sm:p-6">
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
               <CalendarIcon size={14} /> Your session
             </div>
             {selectedService ? (
               <>
-                <div className="font-serif mt-4 text-xl italic sm:text-2xl">
+                <div className="font-serif mt-3 break-words text-lg italic sm:mt-4 sm:text-xl">
                   {selectedService.name}
                 </div>
-                <p className="mt-3 text-sm text-muted-foreground">
+                <p className="mt-2 break-words text-pretty text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   {selectedService.description}
                 </p>
               </>
@@ -213,28 +212,30 @@ function BookPage() {
           </div>
         </aside>
 
-        <form onSubmit={submit} className="order-last space-y-8 sm:space-y-10 lg:order-none">
-          <div>
-            <h2 className="text-witchy text-2xl sm:text-3xl">1. Choose a session</h2>
-            <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2">
+        <form onSubmit={submit} className="order-last min-w-0 w-full max-w-full space-y-6 sm:space-y-8 lg:order-none">
+          <div className="min-w-0">
+            <h2 className="text-witchy text-xl sm:text-2xl md:text-3xl">1. Choose a session</h2>
+            <div className="mt-3 flex w-full min-w-0 flex-col gap-2 sm:mt-4 sm:grid sm:grid-cols-2 sm:gap-3">
               {services.map((s) => (
                 <button
                   key={s.slug}
                   type="button"
                   onClick={() => setServiceSlug(s.slug)}
-                  className={`touch-target border p-4 text-left transition-colors sm:p-5 ${
+                  className={`touch-target-block box-border border p-3 text-left transition-colors sm:p-4 ${
                     serviceSlug === s.slug
                       ? "border-foreground bg-foreground/5"
                       : "border-border hover:border-foreground/60"
                   }`}
                 >
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                  <div className="break-words text-[9px] uppercase tracking-[0.15em] text-muted-foreground sm:text-[10px] sm:tracking-[0.2em]">
                     {s.category}
                   </div>
-                  <div className="font-serif mt-1 text-lg italic">{s.name}</div>
-                  <div className="mt-3 flex items-baseline justify-between text-sm">
-                    <span className="text-muted-foreground">{s.duration}</span>
-                    <span className="text-foreground">
+                  <div className="font-serif mt-1 break-words text-base leading-snug italic sm:text-lg">
+                    {s.name}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm">
+                    <span className="shrink-0 text-muted-foreground">{s.duration}</span>
+                    <span className="font-medium text-foreground">
                       {s.price ? formatPrice(s.price, s.currency!) : "On request"}
                     </span>
                   </div>
@@ -243,9 +244,9 @@ function BookPage() {
             </div>
           </div>
 
-          <div>
-            <h2 className="text-witchy text-2xl sm:text-3xl">2. Pick a day</h2>
-            <div className="scrollbar-none mt-4 flex gap-2 overflow-x-auto pb-2 sm:mt-6">
+          <div className="min-w-0">
+            <h2 className="text-witchy text-xl sm:text-2xl md:text-3xl">2. Pick a day</h2>
+            <div className="scrollbar-none -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-4 sm:px-0">
               {days.map((d, i) => (
                 <button
                   key={d.num}
@@ -254,30 +255,30 @@ function BookPage() {
                     setDay(i);
                     setSlot(null);
                   }}
-                  className={`touch-target shrink-0 border px-4 py-3 text-center transition-colors sm:px-5 sm:py-4 ${
+                  className={`shrink-0 border px-3 py-2.5 text-center transition-colors sm:px-4 sm:py-3 ${
                     day === i
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <div className="text-[10px] uppercase tracking-[0.2em]">
+                  <div className="text-[9px] uppercase tracking-[0.15em] sm:text-[10px] sm:tracking-[0.2em]">
                     {d.label}
                   </div>
-                  <div className="font-serif mt-1 text-base">{d.num}</div>
+                  <div className="font-serif mt-0.5 text-sm sm:mt-1 sm:text-base">{d.num}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          <div>
-            <h2 className="text-witchy text-2xl sm:text-3xl">3. Choose a time</h2>
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:grid-cols-3 md:grid-cols-6">
+          <div className="min-w-0">
+            <h2 className="text-witchy text-xl sm:text-2xl md:text-3xl">3. Choose a time</h2>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 md:grid-cols-6">
               {SLOTS.map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setSlot(t)}
-                  className={`touch-target border py-3.5 text-sm transition-colors ${
+                  className={`min-h-11 border px-2 py-2.5 text-xs transition-colors sm:text-sm ${
                     slot === t
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
@@ -289,8 +290,8 @@ function BookPage() {
             </div>
           </div>
 
-          <div>
-            <h2 className="text-witchy text-2xl sm:text-3xl">4. Your details</h2>
+          <div className="min-w-0">
+            <h2 className="text-witchy text-xl sm:text-2xl md:text-3xl">4. Your details</h2>
             <div className="mt-4 grid gap-4 sm:mt-6 sm:grid-cols-2">
               <input
                 value={name}

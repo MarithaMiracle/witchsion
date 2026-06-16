@@ -150,41 +150,44 @@ function HomePage() {
       </section>
 
       {/* CONSULTATIONS */}
-      <section className="relative isolate overflow-hidden border-y border-border/40 bg-card/40 py-24 md:py-32">
+      <section className="relative isolate overflow-hidden border-y border-border/40 bg-card/40 py-14 sm:py-20 md:py-28">
         <MysticBackground />
-        <div className="relative mx-auto grid max-w-7xl gap-16 px-4 sm:px-6 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-          <div className="relative">
+        <div className="relative mx-auto grid w-full min-w-0 max-w-7xl gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-16">
+          <div className="relative min-w-0">
             <img
               src={owlArt}
               alt="Witchsion mystical owl illustration"
               loading="lazy"
               width={1024}
               height={1024}
-              className="mx-auto w-full max-w-md opacity-90 mix-blend-screen animate-flicker"
+              className="mx-auto w-full max-w-[14rem] opacity-90 mix-blend-screen animate-flicker sm:max-w-xs md:max-w-md"
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
               sit with the witch
             </span>
-            <h2 className="text-witchy mt-3 text-balance text-5xl md:text-6xl lg:text-7xl">
+            <h2 className="text-witchy mt-3 text-balance text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
               readings &amp; consultations
             </h2>
-            <p className="font-serif mt-6 max-w-xl text-pretty text-lg italic text-muted-foreground">
+            <p className="font-serif mt-4 max-w-xl text-pretty text-base italic text-muted-foreground sm:mt-6 sm:text-lg">
               Tarot, spiritual guidance and spell-work consultations. Bring your question, leave with perspective.
             </p>
 
-            <ul className="mt-10 divide-y divide-border/40 border-y border-border/40">
+            <ul className="mt-8 divide-y divide-border/40 border-y border-border/40 sm:mt-10">
               {services.slice(0, 3).map((s) => (
-                <li key={s.slug} className="flex items-baseline justify-between gap-4 py-5">
-                  <div>
-                    <div className="text-base text-foreground">{s.name}</div>
-                    <div className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                <li
+                  key={s.slug}
+                  className="flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:py-5"
+                >
+                  <div className="min-w-0">
+                    <div className="break-words text-sm text-foreground sm:text-base">{s.name}</div>
+                    <div className="mt-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground sm:tracking-[0.2em]">
                       {s.duration}
                     </div>
                   </div>
-                  <div className="font-serif text-lg text-foreground">
+                  <div className="shrink-0 font-serif text-base text-foreground sm:text-lg">
                     {s.price ? formatPrice(s.price, s.currency!) : "By request"}
                   </div>
                 </li>
