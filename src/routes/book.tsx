@@ -244,9 +244,9 @@ function BookPage() {
             </div>
           </div>
 
-          <div className="min-w-0">
+          <div className="min-w-0 overflow-hidden">
             <h2 className="text-witchy text-xl sm:text-2xl md:text-3xl">2. Pick a day</h2>
-            <div className="scrollbar-none -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-4 sm:px-0">
+            <div className="mt-3 grid w-full grid-cols-3 gap-2 sm:mt-4 sm:grid-cols-4 md:grid-cols-7">
               {days.map((d, i) => (
                 <button
                   key={d.num}
@@ -255,16 +255,16 @@ function BookPage() {
                     setDay(i);
                     setSlot(null);
                   }}
-                  className={`shrink-0 border px-3 py-2.5 text-center transition-colors sm:px-4 sm:py-3 ${
+                  className={`min-w-0 border px-1.5 py-2.5 text-center transition-colors sm:px-3 sm:py-3 ${
                     day === i
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <div className="text-[9px] uppercase tracking-[0.15em] sm:text-[10px] sm:tracking-[0.2em]">
+                  <div className="truncate text-[9px] uppercase tracking-[0.1em] sm:text-[10px] sm:tracking-[0.2em]">
                     {d.label}
                   </div>
-                  <div className="font-serif mt-0.5 text-sm sm:mt-1 sm:text-base">{d.num}</div>
+                  <div className="font-serif mt-0.5 truncate text-xs sm:mt-1 sm:text-sm">{d.num}</div>
                 </button>
               ))}
             </div>
