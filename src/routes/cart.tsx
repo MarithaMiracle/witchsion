@@ -6,7 +6,7 @@ import { useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/catalog";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Your bag — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Your bag - Witchsion" }] }),
   component: CartPage,
 });
 
@@ -81,7 +81,7 @@ function CartPage() {
               <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Summary</div>
               <div className="mt-6 flex justify-between text-sm">
                 <span>Subtotal</span>
-                <span className="font-serif text-lg">{currency ? formatPrice(subtotal, currency) : "—"}</span>
+                <span className="font-serif text-lg">{currency ? formatPrice(subtotal, currency) : "-"}</span>
               </div>
               <p className="font-serif mt-3 text-xs italic text-muted-foreground">
                 Shipping calculated after checkout.

@@ -18,7 +18,7 @@ export function AiConcierge() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Greetings, seeker! 🌟 I'm Witchsion's AI Spiritual Concierge. How may I guide you today?",
+      content: "Ask me anything about spirituality, guidance, or what products might resonate with you.",
       timestamp: new Date(),
     },
   ]);
@@ -46,18 +46,12 @@ export function AiConcierge() {
     setIsTyping(true);
 
     try {
-      const result = await submitChat({
-        data: {
-          message: input,
-          sessionId: "session-123",
-          language: "en",
-        },
-      });
+      const result = await submitChat({ data: { question: input } });
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: result.response,
+        content: result?.answer ?? "No response.",
         timestamp: new Date(),
       };
 
@@ -67,7 +61,7 @@ export function AiConcierge() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Oops! The mystical energies are a bit tangled right now. Please try again later.",
+        content: "Unable to respond. Try again later.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -76,16 +70,83 @@ export function AiConcierge() {
     }
   };
 
+  function renderMessageContent(text: string) {
+    if (!text) return null;
+    const urlHttp = /(https?:\/\/[\S]+)/i;
+    const wwwRegex = /(www\.[\S]+)/i;
+    const domainRegex = /\b([a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s]*)?)\b/i;
+    const phoneRegex = /(\+?\d[\d\s\-().]{6,}\d)/g;
+    // Split into tokens by spaces so we can test each token
+    const tokens = text.split(/(\s+)/);
+    return (
+      <>
+        {tokens.map((tok, i) => {
+          // preserve display but clean trailing punctuation for href
+          const trailingMatch = tok.match(/[.,!?;:)]+$/);
+          const trailing = trailingMatch ? trailingMatch[0] : "";
+          const display = tok;
+          const clean = tok.replace(/[.,!?;:)]+$/g, "");
+
+          if (urlHttp.test(clean)) {
+            const href = clean;
+            return (
+              <span key={i}>
+                <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          if (wwwRegex.test(clean) || domainRegex.test(clean)) {
+            let href = clean;
+            if (!/^https?:\/\//i.test(href)) href = 'https://' + href;
+            return (
+              <span key={i}>
+                <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          if (phoneRegex.test(clean)) {
+            const number = clean.replace(/[^+0-9]/g, '');
+            return (
+              <span key={i}>
+                <a href={`tel:${number}`} className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          if (clean.startsWith('/')) {
+            return (
+              <span key={i}>
+                <a href={clean} className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          return <span key={i}>{display}</span>;
+        })}
+      </>
+    );
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-96 h-[600px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="mb-4 w-[1000px] max-w-[98vw] h-[600px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-card/60 p-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-amber-400" />
-              <h3 className="text-witchy text-lg">AI Concierge</h3>
+              <h3 className="text-witchy text-lg">Witchsion AI</h3>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
               <X className="h-5 w-5" />
@@ -95,21 +156,20 @@ export function AiConcierge() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => (
-              <div
-                key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}
-              >
+              <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
                 <div
                   className={cn(
                     "max-w-[80%] p-3 rounded-2xl",
-                    msg.role === "user"
-                      ? "bg-foreground text-background"
-                      : "bg-card/60 text-foreground border border-border"
+                    msg.role === "user" ? "bg-foreground text-background" : "bg-card/60 text-foreground border border-border"
                   )}
                 >
-                  <p className="font-serif text-sm italic">{msg.content}</p>
+                  <div className="font-serif text-sm italic">
+                    {renderMessageContent(msg.content)}
+                  </div>
                 </div>
               </div>
             ))}
+
             {isTyping && (
               <div className="flex justify-start">
                 <div className="bg-card/60 p-3 rounded-2xl">
@@ -121,6 +181,7 @@ export function AiConcierge() {
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -135,7 +196,7 @@ export function AiConcierge() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Ask me anything..."
+                placeholder="Ask a short question or describe a goal (e.g. 'protection')"
                 className="flex-1 bg-transparent border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-foreground"
               />
               <Button onClick={handleSend} disabled={isTyping} size="icon">

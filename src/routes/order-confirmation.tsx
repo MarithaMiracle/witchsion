@@ -1,24 +1,27 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import React from "react";
 import { z } from "zod";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getOrder } from "@/lib/orders.functions";
+import { verifyOrderPayment } from "@/lib/orders.functions";
 import { formatPrice, type Currency } from "@/lib/catalog";
 
 const search = z.object({ order: z.string().optional(), reference: z.string().optional() });
 
 export const Route = createFileRoute("/order-confirmation")({
   validateSearch: search,
-  head: () => ({ meta: [{ title: "Order received — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Order received - Witchsion" }] }),
   component: ConfirmationPage,
 });
 
 function ConfirmationPage() {
   const { order } = useSearch({ from: "/order-confirmation" });
   const fetchOrder = useServerFn(getOrder);
+  const verifyPayment = useServerFn(verifyOrderPayment);
   const q = useQuery({
     queryKey: ["order", order],
     queryFn: () => fetchOrder({ data: { id: order! } }),
@@ -26,6 +29,22 @@ function ConfirmationPage() {
     refetchInterval: (query) =>
       (query.state.data as any)?.status === "pending" ? 3000 : false,
   });
+
+  // Try an immediate verification on page load when order is pending - fallback when webhook delays.
+  React.useEffect(() => {
+    if (!order) return;
+    if (q.data?.status !== "pending") return;
+    (async () => {
+      try {
+        await verifyPayment({ data: { orderId: order } });
+        // invalidate / refetch handled by useQuery polling; we trigger a refetch
+        // by invalidating the query via the query client if available.
+      } catch (err) {
+        console.warn("Order verify-on-redirect failed:", err);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

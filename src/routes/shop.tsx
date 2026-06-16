@@ -12,13 +12,13 @@ export const Route = createFileRoute("/shop")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Shop — Witchsion" },
+      { title: "Shop - Witchsion" },
       {
         name: "description",
         content:
           "Browse Witchsion's catalogue: charged oils, sealed spell jars, spiritual baths, smudge, incense, crystals and more.",
       },
-      { property: "og:title", content: "Shop — Witchsion" },
+      { property: "og:title", content: "Shop - Witchsion" },
       {
         property: "og:description",
         content:

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import owlArt from "@/assets/mystic-owl.png";
 import { useState } from "react";
 import { Menu, X, ShoppingBag, User, Globe } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -24,10 +25,11 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link
           to="/"
-          className="text-witchy text-2xl tracking-wider text-foreground transition-opacity hover:opacity-80"
+          className="flex items-center text-witchy text-2xl tracking-wider text-foreground transition-opacity hover:opacity-80"
           aria-label="Witchsion home"
         >
-          witchsion
+          <img src={owlArt} alt="Witchsion owl" className="mr-3 h-6 w-6 object-contain" />
+          <span>witchsion</span>
         </Link>
 
         <nav className="hidden items-center gap-9 md:flex">

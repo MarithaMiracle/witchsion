@@ -20,13 +20,13 @@ import { getPublishedContent } from "@/lib/content.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Witchsion — A Witch on a Mission" },
+      { title: "Witchsion - A Witch on a Mission" },
       {
         name: "description",
         content:
           "Hand-charged oils, spell jars, spiritual baths, smudge, crystals and consultations from Witchsion.",
       },
-      { property: "og:title", content: "Witchsion — A Witch on a Mission" },
+      { property: "og:title", content: "Witchsion - A Witch on a Mission" },
       {
         property: "og:description",
         content:
@@ -68,9 +68,7 @@ function HomePage() {
         <MysticBackground />
 
         <div className="relative mx-auto flex max-w-7xl flex-col items-start gap-10 px-6 pb-32 pt-32 md:pt-40 lg:pb-44">
-          <span className="animate-float-up text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
-            Established in the dark — for the modern witch
-          </span>
+          
 
           <h1
             className="animate-float-up text-witchy text-balance text-6xl leading-[0.9] sm:text-7xl md:text-[7.5rem] lg:text-[9rem]"
@@ -127,13 +125,13 @@ function HomePage() {
           </Link>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {featuredCategories.map((c) => (
             <Link
               key={c.slug}
               to="/shop"
               search={{ category: c.slug }}
-              className="group relative block aspect-[3/4] overflow-hidden bg-card"
+              className="group relative block w-full aspect-[3/4] overflow-hidden bg-transparent"
             >
               <img
                 src={c.image}
@@ -211,7 +209,7 @@ function HomePage() {
           <span>our practice</span>
         </div>
         <p className="text-witchy text-balance text-4xl leading-tight md:text-6xl">
-          "we believe there is no evil and no good magick — the difference is in
+          "we believe there is no evil and no good magick - the difference is in
           she who wields it."
         </p>
         <p className="font-serif mt-8 text-base italic text-muted-foreground">
@@ -283,23 +281,30 @@ function HomePage() {
 
       {/* All Categories */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="grid gap-px bg-border md:grid-cols-3">
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              to="/shop"
-              search={{ category: c.slug }}
-              className="group block bg-background p-8 transition-colors hover:bg-card"
-            >
-              <div className="text-witchy text-3xl">{c.name}</div>
-              <p className="font-serif mt-2 text-sm italic text-muted-foreground">
-                {c.blurb}
-              </p>
-              <div className="mt-6 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground transition-colors group-hover:text-foreground">
-                Browse <ArrowRight size={11} />
-              </div>
-            </Link>
-          ))}
+        <div className="flex justify-center">
+          <div className="inline-grid grid-cols-1 md:grid-cols-3 gap-px bg-background w-full md:w-auto">
+            {categories.map((c) => (
+              <>
+                {c.slug === "crystals" && (
+                  <div key={`spacer-${c.slug}`} className="hidden md:block invisible p-8" aria-hidden />
+                )}
+                <Link
+                  key={c.slug}
+                  to="/shop"
+                  search={{ category: c.slug }}
+                  className="group block bg-background p-8 transition-colors hover:bg-card"
+                >
+                  <div className="text-witchy text-3xl">{c.name}</div>
+                  <p className="font-serif mt-2 text-sm italic text-muted-foreground">
+                    {c.blurb}
+                  </p>
+                  <div className="mt-6 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground transition-colors group-hover:text-foreground">
+                    Browse <ArrowRight size={11} />
+                  </div>
+                </Link>
+              </>
+            ))}
+          </div>
         </div>
       </section>
 

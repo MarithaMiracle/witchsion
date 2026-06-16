@@ -64,21 +64,7 @@ export const getCommunityPosts = createServerFn({ method: "GET" })
     };
   });
 
-export const getPostComments = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ postId: z.string().uuid() }))
-  .handler(async ({ data: { postId } }) => {
-    const { data, error } = await supabaseAdmin
-      .from("community_comments")
-      .select(`
-        *,
-        profiles (full_name),
-        community_comment_likes(user_id)
-      `)
-      .eq("post_id", postId)
-      .order("created_at");
-    if (error) throw new Error(error.message);
-    return data || [];
-  });
+
 
 export const createPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -95,20 +81,7 @@ export const createPost = createServerFn({ method: "POST" })
     return post;
   });
 
-export const createComment = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ postId: z.string().uuid(), content: z.string().min(1), parentId: z.string().uuid().optional() }))
-  .handler(async ({ data, context }) => {
-    console.log('createComment called with:', { data, userId: context.userId });
-    const { error, data: comment } = await context.supabase
-      .from("community_comments")
-      .insert({ user_id: context.userId, post_id: data.postId, content: data.content, parent_id: data.parentId })
-      .select()
-      .single();
-    console.log('createComment result:', { error, comment });
-    if (error) throw new Error(error.message);
-    return comment;
-  });
+
 
 export const toggleReaction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -139,24 +112,4 @@ export const toggleReaction = createServerFn({ method: "POST" })
     }
   });
 
-export const toggleCommunityCommentLike = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ commentId: z.string().uuid() }))
-  .handler(async ({ data, context }) => {
-    const { data: existing } = await context.supabase
-      .from("community_comment_likes")
-      .select('id')
-      .eq("comment_id", data.commentId)
-      .eq("user_id", context.userId)
-      .maybeSingle();
-    
-    if (existing) {
-      const { error } = await context.supabase.from("community_comment_likes").delete().eq("id", existing.id);
-      if (error) throw new Error(error.message);
-      return { liked: false };
-    } else {
-      const { error } = await context.supabase.from("community_comment_likes").insert({ comment_id: data.commentId, user_id: context.userId });
-      if (error) throw new Error(error.message);
-      return { liked: true };
-    }
-  });
+

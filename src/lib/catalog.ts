@@ -11,6 +11,7 @@ import crystalImg from "@/assets/product-crystals.jpg";
 import tarotImg from "@/assets/service-tarot.jpg";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 
 export type Currency = "NGN" | "USD";
@@ -61,7 +62,7 @@ const oils: Product[] = [
   image: oilImg,
   blurb: "Hand-charged ritual oil in amber glass.",
   description:
-    "A small-batch oil dressed and charged by hand. Intended as a focal point for ritual practice — anoint candles, jewellery, or your skin in line with your own intentions.",
+    "A small-batch oil dressed and charged by hand. Intended as a focal point for ritual practice; anoint candles, jewellery, or your skin in line with your own intentions.",
   intention: name as string,
   use: ["Anoint candles", "Dress petitions", "Wear over pulse points"],
 }));
@@ -231,7 +232,7 @@ const crystals: Product[] = [
   price: 12000,
   currency: "NGN" as const,
   image: crystalImg,
-  blurb: "Pendant or bracelet — chosen for resonance.",
+  blurb: "Pendant or bracelet - chosen for resonance.",
   description: `Ethically sourced ${name.toLowerCase()} offered as pendants and bracelets. Each piece is selected and cleansed before dispatch.`,
   intention: `${name} resonance`,
   use: ["Wear as jewellery", "Carry in pocket", "Place on altar"],
@@ -261,7 +262,7 @@ export const categories: { slug: string; name: string; blurb: string }[] = [
 export const services: Service[] = [
   {
     slug: "tarot-general",
-    name: "Tarot Reading — General",
+    name: "Tarot Reading - General",
     category: "Tarot Reading",
     price: 15000,
     currency: "NGN",
@@ -273,19 +274,19 @@ export const services: Service[] = [
   },
   {
     slug: "tarot-love",
-    name: "Tarot Reading — Love",
+    name: "Tarot Reading - Love",
     category: "Tarot Reading",
     price: 25000,
     currency: "NGN",
     duration: "45 min",
-    blurb: "A relational reading — self, partner, dynamic.",
+    blurb: "A relational reading - self, partner, dynamic.",
     description:
       "An in-depth tarot reading focused on relationships and emotional dynamics.",
     image: tarotImg,
   },
   {
     slug: "tarot-ancestors",
-    name: "Tarot Reading — Ancestors",
+    name: "Tarot Reading - Ancestors",
     category: "Tarot Reading",
     price: 40000,
     currency: "NGN",
@@ -312,7 +313,7 @@ export const services: Service[] = [
     duration: "By arrangement",
     blurb: "Pricing depends on the working.",
     description:
-      "Discuss spell work — attraction, protection, reflection, road opening, success and abundance, and others — with the practitioner. Pricing depends on the scope and duration of the working.",
+      "Discuss spell work; attraction, protection, reflection, road opening, success and abundance, and others; with the practitioner. Pricing depends on the scope and duration of the working.",
     image: tarotImg,
   },
 ];
@@ -359,42 +360,164 @@ export const getProducts = createServerFn({ method: "GET" })
     sortOrder: z.enum(["asc", "desc"]).default("asc"),
   }).parse(data || { page: 1, pageSize: 12 }))
   .handler(async ({ data: { page, pageSize, category, search, sortBy, sortOrder } }) => {
-    let filteredProducts = [...products];
-    if (category) {
-      filteredProducts = filteredProducts.filter(p => p.categorySlug === category);
-    }
-    
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredProducts = filteredProducts.filter(p => 
-        p.name.toLowerCase().includes(searchLower) ||
-        p.blurb.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        p.intention.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // Sort the products
-    filteredProducts.sort((a, b) => {
-      let comparison = 0;
-      if (sortBy === "price") {
-        comparison = a.price - b.price;
-      } else if (sortBy === "name") {
-        comparison = a.name.localeCompare(b.name);
+    // Try DB-backed listing first
+    try {
+      let query = supabaseAdmin.from("products").select(`*, categories(name)`, { count: "exact" }).eq("is_active", true);
+
+      if (category) {
+        query = query.eq("category_slug", category);
       }
-      // For "created_at", keep original order (since static data doesn't have it)
-      
-      return sortOrder === "desc" ? -comparison : comparison;
-    });
-    
-    const { items: paginatedProducts, total } = paginate(filteredProducts, page, pageSize);
-    
-    return {
-      products: paginatedProducts,
-      total,
-      page,
-      pageSize,
-    };
+
+      if (search) {
+        // Use Fuse.js for fuzzy searching across product text fields.
+        // Dynamically import to avoid increasing client bundle size.
+        const { default: Fuse } = await import('fuse.js');
+
+        // Fetch candidate rows (no range) limited to the category if present
+        let allQuery = supabaseAdmin.from('products').select(`*, categories(name)`).eq('is_active', true);
+        if (category) allQuery = allQuery.eq('category_slug', category);
+        const { data: allRows, error: allError } = await allQuery;
+        if (allError) throw allError;
+
+        const candidates = (allRows || []).map((r: any) => ({
+          ...r,
+          name: r.name || '',
+          blurb: r.blurb || '',
+          description: r.description || '',
+          intention: r.intention || '',
+        }));
+
+        const fuse = new Fuse(candidates, {
+          keys: ['slug', 'name', 'blurb', 'description', 'intention', 'category', 'category_slug', 'categorySlug'],
+          includeScore: true,
+          threshold: 0.5,
+          ignoreLocation: true,
+          minMatchCharLength: 2,
+        });
+
+        const fuseResults = fuse.search(search);
+        const normalizedMatched = fuseResults.map((res: any) => {
+          const r = res.item;
+          const staticP = productBySlug(r.slug);
+          return {
+            ...staticP,
+            ...r,
+            image: r.image || staticP?.image,
+            category: r.categories?.name || staticP?.category || r.category_slug,
+            categorySlug: r.category_slug || staticP?.categorySlug,
+          } as any;
+        });
+
+        // Sort and paginate the matched results in memory
+        normalizedMatched.sort((a: any, b: any) => {
+          let comparison = 0;
+          if (sortBy === 'price') comparison = (a.price || 0) - (b.price || 0);
+          else if (sortBy === 'name') comparison = (a.name || '').localeCompare(b.name || '');
+          return sortOrder === 'desc' ? -comparison : comparison;
+        });
+
+        const { items: paginatedProducts, total } = paginate(normalizedMatched, page, pageSize);
+        return { products: paginatedProducts, total, page, pageSize };
+      }
+
+      // Sorting
+      try {
+        query = query.order(sortBy, { ascending: sortOrder === "asc" });
+      } catch (e) {
+        // ignore ordering errors and fallback to default
+      }
+
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize - 1;
+      // Handle PostgREST "range not satisfiable" (PGRST103) by treating
+      // the result as an empty page instead of throwing, so the UI can
+      // gracefully fall back to the static catalogue.
+      let rows: any[] | null = null;
+      let count: number | null = null;
+      const res = await query.range(start, end);
+      // supabase returns an object with { data, count, error }
+      const { data: _rows, count: _count, error } = res as any;
+      if (error) {
+        if (error && error.code === "PGRST103") {
+          console.warn('getProducts: requested range not satisfiable, treating as empty result');
+          rows = [];
+          count = 0;
+        } else {
+          throw error;
+        }
+      } else {
+        rows = _rows;
+        count = _count;
+      }
+
+      // If the DB returned no rows for this query, fall back to the static catalogue
+      // so categories that don't exist in the DB (incenses, crystals, etc.) still appear.
+      if (!rows || rows.length === 0) {
+        console.warn('getProducts: DB returned no rows, falling back to static catalogue for this query');
+        let filteredProducts = [...products];
+        if (category) filteredProducts = filteredProducts.filter((p) => p.categorySlug === category);
+        if (search) {
+          const searchLower = search.toLowerCase();
+          filteredProducts = filteredProducts.filter((p) =>
+            p.slug.toLowerCase().includes(searchLower) ||
+            (p.name || '').toLowerCase().includes(searchLower) ||
+            (p.blurb || '').toLowerCase().includes(searchLower) ||
+            (p.description || '').toLowerCase().includes(searchLower) ||
+            (p.intention || '').toLowerCase().includes(searchLower) ||
+            (p.category || '').toLowerCase().includes(searchLower) ||
+            (p.categorySlug || '').toLowerCase().includes(searchLower)
+          );
+        }
+        filteredProducts.sort((a, b) => {
+          let comparison = 0;
+          if (sortBy === "price") comparison = a.price - b.price;
+          else if (sortBy === "name") comparison = a.name.localeCompare(b.name);
+          return sortOrder === "desc" ? -comparison : comparison;
+        });
+        const { items: paginatedProducts, total } = paginate(filteredProducts, page, pageSize);
+        return { products: paginatedProducts, total, page, pageSize };
+      }
+
+      const normalized = (rows || []).map((r: any) => {
+        const staticP = productBySlug(r.slug);
+        return {
+          ...staticP,
+          ...r,
+          image: r.image || staticP?.image,
+          category: r.categories?.name || staticP?.category || r.category_slug,
+          categorySlug: r.category_slug || staticP?.categorySlug,
+        } as any;
+      });
+
+      return {
+        products: normalized,
+        total: count ?? normalized.length,
+        page,
+        pageSize,
+      };
+    } catch (e) {
+      console.warn("getProducts supabase fallback due to error:", e);
+      // Fallback to static catalogue
+      let filteredProducts = [...products];
+      if (category) filteredProducts = filteredProducts.filter((p) => p.categorySlug === category);
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredProducts = filteredProducts.filter((p) =>
+          p.name.toLowerCase().includes(searchLower) ||
+          p.blurb.toLowerCase().includes(searchLower) ||
+          p.description.toLowerCase().includes(searchLower) ||
+          p.intention.toLowerCase().includes(searchLower)
+        );
+      }
+      filteredProducts.sort((a, b) => {
+        let comparison = 0;
+        if (sortBy === "price") comparison = a.price - b.price;
+        else if (sortBy === "name") comparison = a.name.localeCompare(b.name);
+        return sortOrder === "desc" ? -comparison : comparison;
+      });
+      const { items: paginatedProducts, total } = paginate(filteredProducts, page, pageSize);
+      return { products: paginatedProducts, total, page, pageSize };
+    }
   });
 
 export const getCategories = createServerFn({ method: "GET" }).handler(async () => {
@@ -404,7 +527,37 @@ export const getCategories = createServerFn({ method: "GET" }).handler(async () 
 export const getProductBySlug = createServerFn({ method: "GET" })
   .inputValidator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
-    return productBySlug(slug);
+    // Prefer DB-backed product (if Supabase configured), fall back to static catalog
+    try {
+      const { data: dbProduct, error } = await supabaseAdmin
+        .from("products")
+        .select(`*, categories(name)`)
+        .eq("slug", slug)
+        .maybeSingle();
+      if (error) {
+        console.warn("getProductBySlug supabase error:", error.message);
+      }
+      if (dbProduct) {
+        console.log('getProductBySlug found in DB:', slug);
+        const staticProduct = productBySlug(slug);
+        // Normalize shape: prefer DB fields but fall back to static catalogue for images and text
+        const merged = {
+          ...staticProduct,
+          ...dbProduct,
+          image: dbProduct.image || staticProduct?.image,
+          category_slug: dbProduct.category_slug || staticProduct?.categorySlug,
+          category: dbProduct.categories?.name || staticProduct?.category || dbProduct.category_slug,
+          categorySlug: dbProduct.category_slug || staticProduct?.categorySlug,
+        } as any;
+        return merged;
+      }
+    } catch (e) {
+      console.warn('getProductBySlug supabase fetch failed:', e);
+    }
+
+    const found = productBySlug(slug);
+    console.log('getProductBySlug requested (static):', slug, 'found:', !!found);
+    return found;
   });
 
 export const getProductsByCategory = createServerFn({ method: "GET" })

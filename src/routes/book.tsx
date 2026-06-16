@@ -15,13 +15,13 @@ import { getServices, createBookingWithPayment } from "@/lib/bookings.functions"
 export const Route = createFileRoute("/book")({
   head: () => ({
     meta: [
-      { title: "Consultations & Readings — Witchsion" },
+      { title: "Consultations & Readings - Witchsion" },
       {
         name: "description",
         content:
           "Book a tarot reading, spiritual consultation or spell-work conversation with Witchsion.",
       },
-      { property: "og:title", content: "Consultations & Readings — Witchsion" },
+      { property: "og:title", content: "Consultations & Readings - Witchsion" },
       {
         property: "og:description",
         content:
@@ -54,24 +54,6 @@ function BookPage() {
   useEffect(() => {
     if (services.length && !serviceSlug) setServiceSlug(services[0].slug);
   }, [services, serviceSlug]);
-  
-  if (servicesQuery.isLoading) {
-    return (
-      <div className="min-h-screen bg-background text-foreground">
-        <SiteHeader />
-        <section className="mx-auto max-w-7xl px-6 py-20 text-center">
-          <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
-            sit with the witch
-          </span>
-          <h1 className="text-witchy mt-4 text-6xl md:text-8xl">consultations</h1>
-          <p className="font-serif mt-6 text-lg italic text-muted-foreground">
-            Reading the cards…
-          </p>
-        </section>
-        <SiteFooter />
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (user?.email && !email) setEmail(user.email);
@@ -94,6 +76,24 @@ function BookPage() {
       }),
     [],
   );
+
+  if (servicesQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <SiteHeader />
+        <section className="mx-auto max-w-7xl px-6 py-20 text-center">
+          <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
+            sit with the witch
+          </span>
+          <h1 className="text-witchy mt-4 text-6xl md:text-8xl">consultations</h1>
+          <p className="font-serif mt-6 text-lg italic text-muted-foreground">
+            Reading the cards…
+          </p>
+        </section>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,6 +120,7 @@ function BookPage() {
           contactName: name,
           contactEmail: email,
           notes: notes || undefined,
+          origin: window.location.origin,
         },
       });
       
@@ -302,7 +303,7 @@ function BookPage() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Time</dt>
-                <dd>{slot ?? "—"}</dd>
+                <dd>{slot ?? "-"}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Duration</dt>

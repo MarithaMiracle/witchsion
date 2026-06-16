@@ -13,38 +13,95 @@ import { listMyOrders } from "@/lib/orders.functions";
 import { listMyBookings } from "@/lib/bookings.functions";
 import { getMyWishlist, removeFromWishlist } from "@/lib/wishlist.functions";
 import { getAIAdvice } from "@/lib/ai.functions";
-import { getUserBadges, getUserTotalPoints, getUserPointsHistory, getBadges } from "@/lib/gamification.functions";
 import { formatPrice, type Currency } from "@/lib/catalog";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  head: () => ({ meta: [{ title: "Your account — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Your account - Witchsion" }] }),
   component: AccountPage,
 });
 
 function AccountPage() {
   const { user, isAdmin, signOut } = useAuth();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'orders' | 'bookings' | 'wishlist' | 'ai-advisor' | 'rewards'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'bookings' | 'wishlist' | 'ai-advisor'>('orders');
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const aiAdviceFn = useServerFn(getAIAdvice);
+
+  function renderChatContent(text: string) {
+    if (!text) return null;
+    const urlHttp = /(https?:\/\/[\S]+)/i;
+    const wwwRegex = /(www\.[\S]+)/i;
+    const domainRegex = /\b([a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s]*)?)\b/i;
+    const phoneRegex = /(\+?\d[\d\s\-().]{6,}\d)/g;
+    const tokens = text.split(/(\s+)/);
+    return (
+      <>
+        {tokens.map((tok, i) => {
+          const trailingMatch = tok.match(/[.,!?;:)]+$/);
+          const trailing = trailingMatch ? trailingMatch[0] : "";
+          const display = tok;
+          const clean = tok.replace(/[.,!?;:)]+$/g, "");
+
+          if (urlHttp.test(clean)) {
+            const href = clean;
+            return (
+              <span key={i}>
+                <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          if (wwwRegex.test(clean) || domainRegex.test(clean)) {
+            let href = clean;
+            if (!/^https?:\/\//i.test(href)) href = 'https://' + href;
+            return (
+              <span key={i}>
+                <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          if (phoneRegex.test(clean)) {
+            const number = clean.replace(/[^+0-9]/g, '');
+            return (
+              <span key={i}>
+                <a href={`tel:${number}`} className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          if (clean.startsWith('/')) {
+            return (
+              <span key={i}>
+                <a href={clean} className="underline">
+                  {clean}
+                </a>
+                {trailing}
+              </span>
+            );
+          }
+          return <span key={i}>{display}</span>;
+        })}
+      </>
+    );
+  }
   const fetchOrders = useServerFn(listMyOrders);
   const fetchBookings = useServerFn(listMyBookings);
   const fetchWishlist = useServerFn(getMyWishlist);
   const removeWishlistItem = useServerFn(removeFromWishlist);
-  const fetchBadges = useServerFn(getBadges);
-  const fetchUserBadges = useServerFn(getUserBadges);
-  const fetchUserTotalPoints = useServerFn(getUserTotalPoints);
-  const fetchUserPointsHistory = useServerFn(getUserPointsHistory);
 
   const ordersQuery = useQuery({ queryKey: ["my-orders"], queryFn: () => fetchOrders() });
   const bookingsQuery = useQuery({ queryKey: ["my-bookings"], queryFn: () => fetchBookings() });
   const wishlistQuery = useQuery({ queryKey: ["my-wishlist"], queryFn: () => fetchWishlist() });
-  const badgesQuery = useQuery({ queryKey: ["all-badges"], queryFn: () => fetchBadges() });
-  const userBadgesQuery = useQuery({ queryKey: ["my-badges"], queryFn: () => fetchUserBadges() });
-  const userTotalPointsQuery = useQuery({ queryKey: ["my-total-points"], queryFn: () => fetchUserTotalPoints() });
-  const userPointsHistoryQuery = useQuery({ queryKey: ["my-points-history"], queryFn: () => fetchUserPointsHistory({ data: { page: 1, pageSize: 10 } }) });
+  // rewards/badges removed
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -80,7 +137,7 @@ function AccountPage() {
 
       {/* Tabs */}
       <div className="mt-12 flex gap-6 border-b border-border">
-        {(['orders', 'bookings', 'wishlist', 'ai-advisor', 'rewards'] as const).map((tab) => (
+        {(['orders', 'bookings', 'wishlist', 'ai-advisor'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -113,7 +170,7 @@ function AccountPage() {
                       <span className="text-foreground">{o.status}</span>
                     </div>
                     <div className="font-serif mt-2 text-base italic">
-                      {o.order_items.length} item{o.order_items.length === 1 ? "" : "s"} —{" "}
+                      {o.order_items.length} item{o.order_items.length === 1 ? "" : "s"} -{" "}
                       {o.order_items.map((i) => i.product_name).slice(0, 2).join(", ")}
                       {o.order_items.length > 2 ? ", …" : ""}
                     </div>
@@ -177,44 +234,59 @@ function AccountPage() {
         <div className="mt-8">
           {wishlistQuery.isLoading ? (
             <p className="text-sm text-muted-foreground">Checking the shelves…</p>
+          ) : wishlistQuery.error ? (
+            <div className="text-sm text-red-500">
+              Failed to load wishlist: {String(wishlistQuery.error)}
+            </div>
           ) : !wishlistQuery.data?.length ? (
             <p className="font-serif text-base italic text-muted-foreground">
               No items saved yet. <Link to="/shop" className="underline">Explore the shop</Link>.
             </p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {wishlistQuery.data.map((item) => (
-                <div key={item.id} className="border border-border bg-card/40 p-5">
-                  {item.products?.image && (
-                    <div className="aspect-square overflow-hidden bg-background mb-4">
-                      <img src={item.products.image} alt={item.products.name} className="w-full h-full object-cover" />
+                {wishlistQuery.data.map((item) => (
+                  <div key={item.id} className="border border-border bg-card/40 p-5">
+                    <div className="flex items-start justify-between">
+                      <Link
+                        to={item.products?.slug ? `/shop/${item.products.slug}` : "/shop"}
+                        className="flex-1"
+                      >
+                        {item.products?.image && (
+                          <div className="aspect-square overflow-hidden bg-background mb-4">
+                            <img src={item.products.image} alt={item.products.name} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                          {item.products?.category?.name || item.products?.category_slug}
+                        </div>
+                        <div className="font-serif mt-1 text-lg italic">{item.products?.name}</div>
+                        <div className="mt-3">
+                          <span className="text-sm">
+                            {formatPrice(Number(item.products?.price || 0), (item.products?.currency || 'NGN') as Currency)}
+                          </span>
+                        </div>
+                      </Link>
+
+                      <div className="ml-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              await removeWishlistItem({ data: { productId: item.product_id } });
+                              toast.success("Removed from wishlist");
+                              queryClient.invalidateQueries({ queryKey: ["my-wishlist"] });
+                            } catch (err) {
+                              toast.error("Failed to remove item");
+                            }
+                          }}
+                          className="text-muted-foreground hover:text-red-500 transition-colors"
+                          aria-label="Remove from wishlist"
+                        >
+                          <Heart size={16} fill="currentColor" />
+                        </button>
+                      </div>
                     </div>
-                  )}
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                    {item.products?.category?.name || item.products?.category_slug}
                   </div>
-                  <div className="font-serif mt-1 text-lg italic">{item.products?.name}</div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-sm">
-                      {formatPrice(Number(item.products?.price || 0), (item.products?.currency || 'NGN') as Currency)}
-                    </span>
-                    <button
-                      onClick={async () => {
-                        try {
-                          await removeWishlistItem({ data: { productId: item.product_id } });
-                          toast.success("Removed from wishlist");
-                          queryClient.invalidateQueries({ queryKey: ["my-wishlist"] });
-                        } catch (err) {
-                          toast.error("Failed to remove item");
-                        }
-                      }}
-                      className="text-muted-foreground hover:text-red-500 transition-colors"
-                    >
-                      <Heart size={16} fill="currentColor" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -222,8 +294,8 @@ function AccountPage() {
 
       {/* AI Advisor Tab */}
       {activeTab === 'ai-advisor' && (
-        <div className="mt-8 border border-border bg-card/40 p-6 max-w-3xl">
-          <h3 className="text-witchy text-2xl mb-6">AI Spiritual Advisor</h3>
+        <div className="mt-8 border border-border bg-card/40 p-6 w-full max-w-5xl mx-auto">
+          <h3 className="text-witchy text-2xl mb-6">Witchsion AI</h3>
           <div className="h-96 overflow-y-auto space-y-4 mb-6 border border-border/50 p-4">
             {chatMessages.length === 0 && (
               <p className="font-serif text-lg italic text-muted-foreground text-center">
@@ -233,7 +305,7 @@ function AccountPage() {
             {chatMessages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] p-4 rounded-sm ${msg.role === 'user' ? 'bg-foreground text-background' : 'bg-card border border-border'}`}>
-                  <p className="text-sm leading-relaxed">{msg.content}</p>
+                  <div className="text-sm leading-relaxed">{renderChatContent(msg.content)}</div>
                 </div>
               </div>
             ))}
@@ -254,8 +326,8 @@ function AccountPage() {
               setChatInput("");
               setChatBusy(true);
               try {
-                const result = await aiAdviceFn({ data: { message: userMessage } });
-                setChatMessages((prev) => [...prev, { role: 'assistant', content: result.reply }]);
+                  const result = await aiAdviceFn({ data: { message: userMessage } });
+                  setChatMessages((prev) => [...prev, { role: 'assistant', content: result?.reply ?? 'No response.' }]);
               } catch (err) {
                 toast.error("Failed to get advice");
               } finally {
@@ -283,117 +355,7 @@ function AccountPage() {
         </div>
       )}
 
-      {/* Rewards Tab */}
-      {activeTab === 'rewards' && (
-        <div className="mt-8">
-          {badgesQuery.isLoading || userBadgesQuery.isLoading || userTotalPointsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Unveiling your rewards…</p>
-          ) : (
-            <>
-              {/* Total Points Card */}
-              <div className="border border-border bg-card/40 p-6 mb-8">
-                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Total Points</div>
-                <div className="font-serif mt-2 text-5xl">{userTotalPointsQuery.data?.totalPoints || 0}</div>
-              </div>
-
-              {/* User Badges */}
-              <div className="mb-8">
-                <h3 className="text-witchy text-2xl mb-4">Your Badges</h3>
-                {userBadgesQuery.data?.userBadges.length === 0 ? (
-                  <p className="font-serif text-base italic text-muted-foreground">
-                    No badges yet. Keep exploring to earn rewards!
-                  </p>
-                ) : (
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {userBadgesQuery.data?.userBadges.map((ub) => (
-                      <div key={ub.id} className="border border-border bg-card/40 p-5">
-                        {ub.badges?.image && (
-                          <div className="aspect-square overflow-hidden bg-background mb-4">
-                            <img src={ub.badges.image} alt={ub.badges.name} className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        <div className="text-witchy text-xl">{ub.badges?.name}</div>
-                        {ub.badges?.description && (
-                          <p className="font-serif mt-2 text-sm italic text-muted-foreground">
-                            {ub.badges.description}
-                          </p>
-                        )}
-                        <div className="mt-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                          Earned {format(new Date(ub.earned_at), "d MMM yyyy")}
-                        </div>
-                        {ub.badges?.points > 0 && (
-                          <div className="mt-1 text-sm font-serif italic">+{ub.badges.points} points</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* All Available Badges */}
-              <div className="mb-8">
-                <h3 className="text-witchy text-2xl mb-4">Available Badges</h3>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {badgesQuery.data?.badges.map((badge) => {
-                    const earned = userBadgesQuery.data?.userBadges.some(ub => ub.badge_id === badge.id);
-                    return (
-                      <div key={badge.id} className={`border p-5 ${earned ? 'border-foreground bg-card/60' : 'border-border bg-card/40 opacity-60'}`}>
-                        {badge.image && (
-                          <div className="aspect-square overflow-hidden bg-background mb-4">
-                            <img src={badge.image} alt={badge.name} className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        <div className="text-witchy text-xl">{badge.name}</div>
-                        {badge.description && (
-                          <p className="font-serif mt-2 text-sm italic text-muted-foreground">
-                            {badge.description}
-                          </p>
-                        )}
-                        {badge.points > 0 && (
-                          <div className="mt-3 text-sm font-serif italic">+{badge.points} points</div>
-                        )}
-                        {earned && (
-                          <div className="mt-3 text-[10px] uppercase tracking-[0.3em] text-green-600">
-                            Earned!
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Points History */}
-              <div>
-                <h3 className="text-witchy text-2xl mb-4">Points History</h3>
-                {userPointsHistoryQuery.data?.points.length === 0 ? (
-                  <p className="font-serif text-base italic text-muted-foreground">
-                    No points history yet.
-                  </p>
-                ) : (
-                  <ul className="space-y-4">
-                    {userPointsHistoryQuery.data?.points.map((p) => (
-                      <li key={p.id} className="border border-border bg-card/40 p-5">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                              {format(new Date(p.created_at), "d MMM yyyy")}
-                            </div>
-                            <div className="font-serif mt-2 text-base italic">{p.reason}</div>
-                          </div>
-                          <div className={`font-serif text-xl ${p.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {p.points > 0 ? '+' : ''}{p.points}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      {/* rewards/badges removed */}
       </section>
       <SiteFooter />
     </div>

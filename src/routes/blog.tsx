@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const Route = createFileRoute("/blog")({
-  head: () => ({ meta: [{ title: "Blog — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Blog - Witchsion" }] }),
   component: BlogLayout,
 });
 

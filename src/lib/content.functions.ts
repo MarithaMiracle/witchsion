@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getRequest } from "@tanstack/react-start/server";
 
 export const getPublishedContent = createServerFn({ method: "GET" })
   .inputValidator(z.object({ type: z.string().optional(), page: z.number().min(1).default(1), pageSize: z.number().min(1).max(20).default(10) }))
@@ -107,61 +108,47 @@ export const adminDeleteContent = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-export const getContentComments = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ contentId: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    const { data: comments, error } = await supabaseAdmin
-      .from("content_comments")
-      .select(`*, profiles(full_name), content_comment_likes(user_id)`)
-      .eq("content_id", data.contentId)
-      .order("created_at", { ascending: true });
-    if (error) throw new Error(error.message);
-    return comments || [];
-  });
-
-export const createContentComment = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ 
-    contentId: z.string().uuid(), 
-    content: z.string().min(1),
-    parentId: z.string().uuid().optional() 
-  }))
-  .handler(async ({ data, context }) => {
-    const { error, data: comment } = await context.supabase
-      .from("content_comments")
-      .insert({ 
-        content_id: data.contentId, 
-        user_id: context.userId, 
-        content: data.content,
-        parent_id: data.parentId 
-      })
-      .select(`*, profiles(full_name)`)
-      .single();
-    if (error) throw new Error(error.message);
-    return comment;
-  });
 
 export const getContentLikes = createServerFn({ method: "GET" })
   .inputValidator(z.object({ contentId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
+    console.log('getContentLikes called for', data.contentId);
+
     const { count, error } = await supabaseAdmin
       .from("content_likes")
       .select('*', { count: 'exact', head: true })
       .eq("content_id", data.contentId);
-    
-    if (error) throw new Error(error.message);
 
-    let hasLiked = false;
-    if (context.userId) {
-      const { data: userLike } = await supabaseAdmin
-        .from("content_likes")
-        .select('id')
-        .eq("content_id", data.contentId)
-        .eq("user_id", context.userId)
-        .maybeSingle();
-      if (userLike) hasLiked = true;
+    if (error) {
+      console.error('getContentLikes count error:', error);
+      throw new Error(error.message);
     }
-    
+
+    // Determine if the requesting user has liked this content. If the
+    // client included an Authorization bearer token (attached by the client
+    // middleware), decode it to get the user id and check the likes table.
+    let hasLiked = false;
+    try {
+      const request = getRequest();
+      const authHeader = request?.headers?.get?.('authorization') || request?.headers?.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: claimsData, error: claimsErr } = await supabaseAdmin.auth.getClaims(token);
+        if (!claimsErr && claimsData?.claims?.sub) {
+          const userId = claimsData.claims.sub;
+          const { data: userLike } = await supabaseAdmin
+            .from('content_likes')
+            .select('id')
+            .eq('content_id', data.contentId)
+            .eq('user_id', userId)
+            .maybeSingle();
+          if (userLike) hasLiked = true;
+        }
+      }
+    } catch (err) {
+      console.error('getContentLikes userLike check failed:', err);
+    }
+
     return { count: count || 0, hasLiked };
   });
 
@@ -169,42 +156,35 @@ export const toggleContentLike = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ contentId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    const { data: existing } = await context.supabase
+    console.log('toggleContentLike called for', data.contentId, 'by user', context.userId);
+    const { data: existing, error: fetchErr } = await context.supabase
       .from("content_likes")
       .select('id')
       .eq("content_id", data.contentId)
       .eq("user_id", context.userId)
       .maybeSingle();
-    
+
+    if (fetchErr) {
+      console.error('toggleContentLike fetch existing error:', fetchErr);
+      throw new Error(fetchErr.message);
+    }
+
     if (existing) {
       const { error } = await context.supabase.from("content_likes").delete().eq("id", existing.id);
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('toggleContentLike delete error:', error);
+        throw new Error(error.message);
+      }
+      console.log('toggleContentLike: removed like', existing.id);
       return { liked: false };
     } else {
       const { error } = await context.supabase.from("content_likes").insert({ content_id: data.contentId, user_id: context.userId });
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error('toggleContentLike insert error:', error);
+        throw new Error(error.message);
+      }
+      console.log('toggleContentLike: inserted like for user', context.userId);
       return { liked: true };
     }
   });
 
-export const toggleContentCommentLike = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ commentId: z.string().uuid() }))
-  .handler(async ({ data, context }) => {
-    const { data: existing } = await context.supabase
-      .from("content_comment_likes")
-      .select('id')
-      .eq("comment_id", data.commentId)
-      .eq("user_id", context.userId)
-      .maybeSingle();
-    
-    if (existing) {
-      const { error } = await context.supabase.from("content_comment_likes").delete().eq("id", existing.id);
-      if (error) throw new Error(error.message);
-      return { liked: false };
-    } else {
-      const { error } = await context.supabase.from("content_comment_likes").insert({ comment_id: data.commentId, user_id: context.userId });
-      if (error) throw new Error(error.message);
-      return { liked: true };
-    }
-  });

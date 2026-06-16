@@ -4,6 +4,16 @@ import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -31,7 +41,7 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Admin — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Admin - Witchsion" }] }),
   component: AdminPage,
 });
 
@@ -87,6 +97,7 @@ function AdminPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [editingContent, setEditingContent] = useState<any>(null);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
   if (overviewQuery.isLoading || productsQuery.isLoading || categoriesQuery.isLoading || contentQuery.isLoading) {
     return (
@@ -825,12 +836,43 @@ function AdminPage() {
                     <option value="resource">Resources</option>
                   </select>
                 </div>
-                <button
-                  onClick={() => setEditingContent({})}
-                  className="px-6 py-3 border border-foreground text-sm tracking-widest uppercase hover:bg-foreground hover:text-background transition-colors"
-                >
-                  Add New Content
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      const hasEdits = editingContent && (editingContent.id || Object.values(editingContent || {}).some((v) => Boolean(v)));
+                      if (hasEdits) {
+                        setDiscardDialogOpen(true);
+                        return;
+                      }
+                      setEditingContent({});
+                    }}
+                    className="px-6 py-3 border border-foreground text-sm tracking-widest uppercase hover:bg-foreground hover:text-background transition-colors"
+                  >
+                    Add New Content
+                  </button>
+
+                  <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          You have unsaved edits. Discard them and start a new content draft?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setDiscardDialogOpen(false)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            setEditingContent({});
+                            setDiscardDialogOpen(false);
+                          }}
+                        >
+                          Discard and create
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
               </div>
 
               {/* Content Form */}

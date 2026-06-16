@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ---------------------------------------------------------------
-   Witchsion — dark mystical design system
+    Witchsion - dark mystical design system
    - Forest-dark background, white parchment text
    - Smoke/fog gradients, candle-amber accents
    - Hand-drawn gothic display font for headings
@@ -61,7 +61,7 @@
 
 :root {
     --radius: 0.25rem;
-    /* Base palette — deep forest blacks, parchment whites */
+    /* Base palette - deep forest blacks, parchment whites */
     --background: oklch(0.12 0.01 260);
     /* near-black with cool tint */
     --foreground: oklch(0.96 0.005 80);

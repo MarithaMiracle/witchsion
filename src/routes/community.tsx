@@ -12,16 +12,13 @@ import { useAuth } from "@/lib/auth";
 import {
   getCommunityGroups,
   getCommunityPosts,
-  getPostComments,
   createPost,
-  createComment,
-  toggleReaction,
-  toggleCommunityCommentLike
+  toggleReaction
 } from "@/lib/community.functions";
 
 export const Route = createFileRoute("/community")({
   component: CommunityPage,
-  head: () => ({ meta: [{ title: "Community — Witchsion" }] })
+  head: () => ({ meta: [{ title: "Community - Witchsion" }] })
 });
 
 function CommunityPage() {
@@ -29,27 +26,17 @@ function CommunityPage() {
   const queryClient = useQueryClient();
   const [activeGroupSlug, setActiveGroupSlug] = useState<string | undefined>();
   const [postsPage, setPostsPage] = useState(1);
-  const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
 
   const fetchGroups = useServerFn(getCommunityGroups);
   const fetchPosts = useServerFn(getCommunityPosts);
-  const fetchComments = useServerFn(getPostComments);
   const createPostFn = useServerFn(createPost);
-  const createCommentFn = useServerFn(createComment);
   const toggleReactionFn = useServerFn(toggleReaction);
-  const toggleCommentLikeFn = useServerFn(toggleCommunityCommentLike);
 
   const groupsQuery = useQuery({ queryKey: ["community-groups"], queryFn: () => fetchGroups() });
   const postsQuery = useQuery({ 
     queryKey: ["community-posts", activeGroupSlug, postsPage], 
     queryFn: () => fetchPosts({ data: { groupSlug: activeGroupSlug, page: postsPage, pageSize: 10 } })
-  });
-  const commentsQuery = useQuery({ 
-    queryKey: ["post-comments", expandedPostId], 
-    queryFn: () => fetchComments({ data: { postId: expandedPostId! } }),
-    enabled: !!expandedPostId
   });
 
   return (
@@ -203,91 +190,10 @@ function CommunityPage() {
                       >
                         ❤️ {post.community_reactions?.[0]?.count || 0}
                       </button>
-                      <button
-                        onClick={() => setExpandedPostId(expandedPostId === post.id ? null : post.id)}
-                        className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        💬 {post.community_comments?.[0]?.count || 0} Comments
-                      </button>
+                      
                     </div>
 
-                    {/* Comments Section */}
-                    {expandedPostId === post.id && (
-                      <div className="border-t border-border/50 pt-6 mt-4">
-                        {commentsQuery.isLoading ? (
-                          <p className="text-sm text-muted-foreground">Loading comments...</p>
-                        ) : !commentsQuery.data?.length ? (
-                          <p className="font-serif text-sm italic text-muted-foreground">No comments yet. Be the first!</p>
-                        ) : (
-                          <div className="space-y-4 mb-6">
-                            {commentsQuery.data.filter((c: any) => !c.parent_id).map((comment: any) => (
-                              <CommunityCommentNode
-                                key={comment.id}
-                                comment={comment}
-                                allComments={commentsQuery.data}
-                                user={user}
-                                onReply={(id) => setReplyingTo(id)}
-                                onLike={async (id) => {
-                                  try {
-                                    await toggleCommentLikeFn({ data: { commentId: id } });
-                                    queryClient.invalidateQueries({ queryKey: ["post-comments", post.id] });
-                                  } catch (err) {
-                                    console.error(err);
-                                  }
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-
-                        {user && (
-                          <form
-                            onSubmit={async (e) => {
-                              e.preventDefault();
-                              const formData = new FormData(e.currentTarget);
-                              try {
-                                await createCommentFn({
-                                  data: {
-                                    postId: post.id,
-                                    content: formData.get("comment") as string,
-                                    parentId: replyingTo || undefined
-                                  }
-                                });
-                                toast.success("Comment added!");
-                                queryClient.invalidateQueries({ queryKey: ["post-comments", post.id] });
-                                queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-                                setReplyingTo(null);
-                                e.currentTarget.reset();
-                              } catch (err) {
-                                toast.error("Failed to add comment");
-                              }
-                            }}
-                            className="flex flex-col gap-3"
-                          >
-                            {replyingTo && (
-                              <div className="flex items-center justify-between bg-muted/20 px-4 py-2 text-sm">
-                                <span className="text-muted-foreground italic">Replying to comment...</span>
-                                <button type="button" onClick={() => setReplyingTo(null)} className="text-foreground hover:underline">Cancel</button>
-                              </div>
-                            )}
-                            <div className="flex gap-3">
-                              <input
-                                name="comment"
-                                required
-                                placeholder="Add a comment..."
-                                className="flex-1 bg-transparent border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground"
-                              />
-                              <button
-                                type="submit"
-                                className="bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background hover:opacity-90 transition-opacity"
-                              >
-                                Post
-                              </button>
-                            </div>
-                          </form>
-                        )}
-                      </div>
-                    )}
+                    
                   </div>
                 ))}
 
@@ -323,44 +229,4 @@ function CommunityPage() {
   );
 }
 
-function CommunityCommentNode({ comment, allComments, onReply, user, onLike }: { comment: any, allComments: any[], onReply: (id: string) => void, user: any, onLike: (id: string) => void }) {
-  const replies = allComments.filter(c => c.parent_id === comment.id);
-  const likesCount = comment.community_comment_likes?.length || 0;
-  const hasLiked = user && comment.community_comment_likes?.some((l: any) => l.user_id === user.id);
-  
-  return (
-    <div className="pl-4 border-l border-border/30 mb-4">
-      <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-        {comment.profiles?.full_name || "Anonymous"}
-      </div>
-      <p className="text-sm leading-relaxed text-muted-foreground mt-2 mb-2">{comment.content}</p>
-      
-      <div className="flex items-center gap-4 mb-2">
-        <button 
-          onClick={() => user ? onLike(comment.id) : alert('Please log in to like this comment.')}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] transition-colors group"
-        >
-          <Heart size={12} className={hasLiked ? 'fill-foreground text-foreground' : 'text-muted-foreground group-hover:text-foreground'} />
-          <span className={hasLiked ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}>{likesCount}</span>
-        </button>
-
-        {user && (
-          <button 
-            onClick={() => onReply(comment.id)}
-            className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Reply
-          </button>
-        )}
-      </div>
-
-      {replies.length > 0 && (
-        <div className="mt-4 space-y-4">
-          {replies.map(reply => (
-            <CommunityCommentNode key={reply.id} comment={reply} allComments={allComments} onReply={onReply} user={user} onLike={onLike} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+ 

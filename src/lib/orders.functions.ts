@@ -176,3 +176,42 @@ export const getOrder = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return order;
   });
+
+export const verifyOrderPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { orderId: string }) => z.object({ orderId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const paystackKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!paystackKey) throw new Error("PAYSTACK_SECRET_KEY not configured");
+
+    // Load order using admin client to avoid RLS issues
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order, error: fetchErr } = await supabaseAdmin
+      .from("orders")
+      .select("id, provider_ref, status")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (fetchErr) throw new Error(fetchErr.message || "Could not fetch order");
+    if (!order) throw new Error("Order not found");
+
+    if (!order.provider_ref) return { success: false, reason: "no_reference" };
+    if (order.status && order.status !== "pending") return { success: false, reason: "not_pending", status: order.status };
+
+    // Verify with Paystack
+    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${order.provider_ref}`, {
+      headers: { Authorization: `Bearer ${paystackKey}` },
+    });
+    const verifyJson = await verifyRes.json();
+    if (!verifyJson.status) return { success: false, reason: verifyJson.message };
+
+    if (verifyJson.data && verifyJson.data.status === "success") {
+      const { error: updateErr } = await supabaseAdmin
+        .from("orders")
+        .update({ status: "paid" })
+        .eq("id", data.orderId);
+      if (updateErr) throw new Error(updateErr.message || "Failed to update order status");
+      return { success: true, status: "paid" };
+    }
+
+    return { success: false, reason: "not_success", status: verifyJson.data?.status };
+  });

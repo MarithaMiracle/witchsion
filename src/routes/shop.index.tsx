@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { useEffect, useState } from "react";
 
 import { getCategories, getProducts, formatPrice } from "@/lib/catalog";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
@@ -23,6 +24,11 @@ function ShopIndex() {
   const { category, page = 1, search = "", sortBy = "created_at", sortOrder = "desc" } = Route.useSearch();
   const navigate = useNavigate({ from: "/shop" });
   const pageSize = 12;
+  const [localSearch, setLocalSearch] = useState(search ?? "");
+
+  useEffect(() => {
+    setLocalSearch(search ?? "");
+  }, [search]);
 
   const fetchProductsFn = useServerFn(getProducts);
   const fetchCategoriesFn = useServerFn(getCategories);
@@ -37,6 +43,15 @@ function ShopIndex() {
     return (
       <main className="min-h-screen bg-background text-foreground">
         <p className="px-6 py-24 text-center text-muted-foreground">Loading…</p>
+      </main>
+    );
+  }
+
+  if (productsQuery.isError) {
+    console.error('Products query error:', productsQuery.error);
+    return (
+      <main className="min-h-screen bg-background text-foreground">
+        <p className="px-6 py-24 text-center text-destructive">Unable to load products — please try again later.</p>
       </main>
     );
   }
@@ -84,23 +99,34 @@ function ShopIndex() {
       <section className="sticky top-16 z-30 border-b border-border/40 bg-background/80 px-6 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl py-4 space-y-4">
           {/* Search Bar */}
-          <div className="relative">
+          <form
+            className="relative"
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate({ search: (prev) => ({ ...prev, search: localSearch || undefined, page: 1 }) });
+            }}
+          >
             <input
               type="text"
               placeholder="Search products..."
-              value={search}
-              onChange={(e) => navigate({ search: (prev) => ({ ...prev, search: e.target.value || undefined, page: 1 }) })}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="w-full bg-card border border-border px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-foreground rounded-sm"
             />
-            {search && (
+            {localSearch && (
               <button
-                onClick={() => navigate({ search: (prev) => ({ ...prev, search: undefined, page: 1 }) })}
+                type="button"
+                onClick={() => {
+                  setLocalSearch("");
+                  navigate({ search: (prev) => ({ ...prev, search: undefined, page: 1 }) });
+                }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 ✕
               </button>
             )}
-          </div>
+            <button type="submit" className="sr-only">Search</button>
+          </form>
           
           {/* Filters and Sorting */}
           <div className="flex flex-wrap gap-2 items-center justify-between">

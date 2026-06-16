@@ -12,7 +12,7 @@ export const Route = createFileRoute("/resources/$slug")({
   component: ResourcePage,
   head: (ctx) => ({
     meta: [
-      { title: `${ctx.params.slug} — Witchsion Resources` },
+      { title: `${ctx.params.slug} - Witchsion Resources` },
     ],
   }),
 });

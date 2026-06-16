@@ -11,7 +11,7 @@ import { formatPrice } from "@/lib/catalog";
 import { createCheckout } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Checkout - Witchsion" }] }),
   component: CheckoutPage,
 });
 
@@ -148,7 +148,7 @@ function CheckoutPage() {
                   active={provider === "stripe"}
                   onClick={() => setProvider("stripe")}
                   title="Stripe"
-                  blurb="Coming soon — not yet configured."
+                  blurb="Coming soon - not yet configured."
                   disabled
                 />
               </div>

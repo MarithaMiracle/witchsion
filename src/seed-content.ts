@@ -14,7 +14,7 @@ const content = [
       <p>Welcome to the world of witchcraft! The path of the modern witch is deeply personal, rooted in nature, intuition, and intention. If you are just starting, the sheer amount of information out there can be overwhelming. Take a deep breath; your practice is yours to define.</p>
       
       <h2>What is Witchcraft?</h2>
-      <p>At its core, witchcraft is a spiritual practice that connects you with the natural world and your own inner power. It isn't about flying on broomsticks or cursing your enemies—it's about energy manipulation, mindfulness, and living in alignment with the earth's cycles.</p>
+      <p>At its core, witchcraft is a spiritual practice that connects you with the natural world and your own inner power. It isn't about flying on broomsticks or cursing your enemies; it's about energy manipulation, mindfulness, and living in alignment with the earth's cycles.</p>
       
       <blockquote>"Magic is simply the art of changing consciousness at will."</blockquote>
       
@@ -51,7 +51,7 @@ const content = [
       <h2>How to Choose Your Crystal</h2>
       <p>Don't overthink it! Often, the crystal you need will draw you in. Notice which stones catch your eye or feel warm/tingly when you hold them. Always remember to cleanse your new crystals with smoke, moonlight, or sound before using them in spellwork.</p>
     `,
-    type: 'resource',
+    type: 'blog',
     is_published: true,
     published_at: new Date().toISOString()
   },
@@ -65,7 +65,7 @@ const content = [
       <h2>Major vs Minor Arcana</h2>
       <p>Let's break down the differences:</p>
       <ul>
-        <li><strong>The Major Arcana (22 cards):</strong> These cards represent significant life events, spiritual lessons, and major themes. When they appear, pay attention—they carry heavy weight. (e.g., The Fool, The Lovers, The Tower).</li>
+        <li><strong>The Major Arcana (22 cards):</strong> These cards represent significant life events, spiritual lessons, and major themes. When they appear, pay attention; they carry heavy weight. (e.g., The Fool, The Lovers, The Tower).</li>
         <li><strong>The Minor Arcana (56 cards):</strong> These deal with the day-to-day aspects of life. They are divided into four suits: Cups (emotions), Wands/Batons (action/passion), Swords (intellect/conflict), and Pentacles/Coins (material world/finances).</li>
       </ul>
       
@@ -102,7 +102,7 @@ const content = [
     title: 'Herb Magic 101',
     excerpt: 'An intro to using herbs in your practice.',
     content: `
-      <p>Herbs have been used in magic and medicine for centuries. Every plant carries a unique spirit and vibration. You don't need a huge apothecary to start—in fact, your kitchen cabinet is a great place to begin!</p>
+      <p>Herbs have been used in magic and medicine for centuries. Every plant carries a unique spirit and vibration. You don't need a huge apothecary to start, in fact, your kitchen cabinet is a great place to begin!</p>
       
       <h2>Must-Have Herbs for Your Pantry</h2>
       <ul>

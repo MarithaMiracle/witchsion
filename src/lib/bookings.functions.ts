@@ -9,7 +9,13 @@ const getSupabaseAdmin = async () => {
 };
 
 // Paystack helper
-const initializePaystackPayment = async (email: string, amount: number, currency: string, reference: string) => {
+const initializePaystackPayment = async (
+  email: string,
+  amount: number,
+  currency: string,
+  reference: string,
+  origin?: string,
+) => {
   const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
   if (!paystackSecretKey) throw new Error("PAYSTACK_SECRET_KEY not configured");
 
@@ -27,7 +33,11 @@ const initializePaystackPayment = async (email: string, amount: number, currency
       amount: paystackAmount,
       currency: currency.toUpperCase(),
       reference,
-      callback_url: `${process.env.VITE_SUPABASE_URL?.replace("api.supabase.co", "localhost:5173")}/booking/confirm?reference=${reference}`,
+      // The app exposes the booking confirmation at /booking-confirm
+      // Prefer an explicit app URL when available to avoid accidental localhost/prod mixups.
+      // Use provided origin first (client passed), otherwise prefer explicit `VITE_APP_URL`,
+      // otherwise fall back to the previous SUPABASE_URL replacement used in local dev.
+      callback_url: `${origin || process.env.VITE_APP_URL || process.env.VITE_SUPABASE_URL?.replace("api.supabase.co", "localhost:5173")}/booking-confirm?reference=${reference}`,
     }),
   });
 
@@ -48,6 +58,7 @@ const BookingSchema = z.object({
   contactName: z.string().min(1).max(120),
   contactEmail: z.string().email().max(255),
   notes: z.string().max(2000).optional(),
+  origin: z.string().url().optional(),
 });
 
 export const createBooking = createServerFn({ method: "POST" })
@@ -147,7 +158,8 @@ export const createBookingWithPayment = createServerFn({ method: "POST" })
         data.contactEmail,
         data.price,
         data.currency || "NGN",
-        reference
+        reference,
+        data.origin,
       );
       return { ...row, checkoutUrl, reference };
     }

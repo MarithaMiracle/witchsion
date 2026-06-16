@@ -9,9 +9,7 @@ CREATE POLICY "Everyone can view posts" ON public.community_posts
   FOR SELECT TO authenticated, anon USING (true);
 
 -- Update community comments policy to allow anon users
-DROP POLICY IF EXISTS "Everyone can view comments" ON public.community_comments;
-CREATE POLICY "Everyone can view comments" ON public.community_comments
-  FOR SELECT TO authenticated, anon USING (true);
+-- community_comments policies removed
 
 -- Update community reactions policy to allow anon users
 DROP POLICY IF EXISTS "Everyone can view reactions" ON public.community_reactions;
@@ -21,5 +19,5 @@ CREATE POLICY "Everyone can view reactions" ON public.community_reactions
 -- Grant SELECT access to anon users
 GRANT SELECT ON public.community_groups TO anon;
 GRANT SELECT ON public.community_posts TO anon;
-GRANT SELECT ON public.community_comments TO anon;
 GRANT SELECT ON public.community_reactions TO anon;
+-- GRANT SELECT ON public.community_comments TO anon; -- removed

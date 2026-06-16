@@ -12,8 +12,8 @@ const search = z.object({ redirect: z.string().optional() });
 export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
-    meta: [
-      { title: "Sign in — Witchsion" },
+      meta: [
+      { title: "Sign in - Witchsion" },
       { name: "description", content: "Sign in or create an account to track orders and consultations with Witchsion." },
     ],
   }),

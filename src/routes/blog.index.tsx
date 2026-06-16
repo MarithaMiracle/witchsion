@@ -4,22 +4,26 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { Pagination } from "@/components/Pagination";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getPublishedContent } from "@/lib/content.functions";
 
 export const Route = createFileRoute("/blog/")({
-  head: () => ({ meta: [{ title: "Blog — Witchsion" }] }),
+  head: () => ({ meta: [{ title: "Blog - Witchsion" }] }),
   component: BlogPage,
 });
 
 function BlogPage() {
   const fetchContent = useServerFn(getPublishedContent);
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
 
   const contentQuery = useQuery({
-    queryKey: ["blog-list"],
-    queryFn: () => fetchContent({ data: { type: "blog", page: 1, pageSize: 5 } }),
+    queryKey: ["blog-list", page],
+    queryFn: () => fetchContent({ data: { type: "blog", page, pageSize } }),
   });
 
   if (contentQuery.isLoading) {
@@ -43,7 +47,8 @@ function BlogPage() {
     );
   }
 
-  const { content } = contentQuery.data!;
+  const { content, total } = contentQuery.data!;
+  const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
   console.log('Blog content:', content);
 
   return (
@@ -54,7 +59,7 @@ function BlogPage() {
         </span>
         <h1 className="text-witchy mt-3 text-5xl md:text-6xl">blog</h1>
 
-        <div className="mt-12 grid gap-8">
+          <div className="mt-12 grid gap-8">
           {content.length > 0 ? (
             content.map((post) => (
               <article key={post.id} className="border-b border-border pb-8 last:border-0">
@@ -101,6 +106,11 @@ function BlogPage() {
               No posts yet. Check back soon!
             </p>
           )}
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+            />
         </div>
       </section>
     </div>

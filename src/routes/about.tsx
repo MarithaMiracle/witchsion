@@ -9,13 +9,13 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — Witchsion" },
+      { title: "About - Witchsion" },
       {
         name: "description",
         content:
           "Witchsion is a witch on a mission. We exist to make your spiritual life richer and to share an honest, unfiltered view of witchcraft.",
       },
-      { property: "og:title", content: "About — Witchsion" },
+      { property: "og:title", content: "About - Witchsion" },
       {
         property: "og:description",
         content:
@@ -51,7 +51,7 @@ function AboutPage() {
               about <br /> witchsion
             </h1>
             <p className="font-serif mt-8 max-w-xl text-pretty text-xl italic text-muted-foreground">
-              Our mission is to make your spiritual life richer — and to educate
+              Our mission is to make your spiritual life richer - and to educate
               on what witchcraft actually is, not the washed-out version.
             </p>
           </div>
@@ -70,7 +70,7 @@ function AboutPage() {
       <section className="mx-auto max-w-3xl px-6 py-24">
         <div className="space-y-10 text-base leading-relaxed text-muted-foreground">
           <p className="font-serif text-2xl italic text-foreground">
-            Witchsion is a fusion of <em>Witch</em> and <em>Mission</em> — a
+            Witchsion is a fusion of <em>Witch</em> and <em>Mission</em> - a
             witch on a mission to demystify the craft and walk with you on your
             spiritual journey.
           </p>
@@ -83,13 +83,13 @@ function AboutPage() {
 
           <p>
             Our goal is to enlighten you on spirituality, debunk myth and help
-            you on your path — to show why witchcraft can be done by anyone,
+            you on your path - to show why witchcraft can be done by anyone,
             why their belief matters, and why curiosity is more useful than
             fear.
           </p>
 
           <p className="font-serif border-l-2 border-ember/60 pl-6 text-xl italic text-foreground">
-            "We believe there is no evil and no good magick — all magick is the
+            "We believe there is no evil and no good magick - all magick is the
             same. The difference is in she who wields it."
           </p>
 
@@ -100,7 +100,7 @@ function AboutPage() {
         </div>
 
         <p className="font-serif mt-8 text-pretty text-sm italic text-muted-foreground">
-          You must be 18 or older to purchase or book.
+          
         </p>
       </section>
 

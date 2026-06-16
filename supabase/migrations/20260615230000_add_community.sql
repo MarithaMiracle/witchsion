@@ -62,38 +62,7 @@ CREATE TRIGGER community_posts_touch BEFORE UPDATE ON public.community_posts
 
 
 -- ============ COMMUNITY COMMENTS ============
-CREATE TABLE public.community_comments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  post_id UUID NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.community_comments TO authenticated;
-GRANT ALL ON public.community_comments TO service_role;
-ALTER TABLE public.community_comments ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Everyone can view comments" ON public.community_comments
-  FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Users can create their own comments" ON public.community_comments
-  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own comments" ON public.community_comments
-  FOR UPDATE TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own comments" ON public.community_comments
-  FOR DELETE TO authenticated USING (auth.uid() = user_id);
-
-CREATE POLICY "Admins can manage all comments" ON public.community_comments
-  FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
-
-CREATE TRIGGER community_comments_touch BEFORE UPDATE ON public.community_comments
-  FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+-- community_comments removed
 
 
 -- ============ COMMUNITY REACTIONS ============

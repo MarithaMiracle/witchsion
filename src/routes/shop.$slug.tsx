@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getProductBySlug, getProducts, formatPrice } from "@/lib/catalog";
+import defaultProductImg from "@/assets/product-oil.jpg";
 import { getReviewsForProduct, createReview } from "@/lib/reviews.functions";
 import { getMyWishlist, addToWishlist, removeFromWishlist } from "@/lib/wishlist.functions";
 import { useAuth } from "@/lib/auth";
@@ -27,11 +28,18 @@ export const Route = createFileRoute("/shop/$slug")({
 
 function ProductPage() {
   const { slug } = Route.useParams();
+  // Key the inner component by slug so navigation always remounts it and
+  // prevents hook-order mismatch between renders.
+  return <ProductPageInner key={slug} slug={slug} />;
+}
+
+function ProductPageInner({ slug }: { slug: string }) {
   const { user } = useAuth();
   const [qty, setQty] = useState(1);
   const queryClient = useQueryClient();
   const { add } = useCart();
   const fetchProduct = useServerFn(getProductBySlug);
+  const fetchAllProductsFn = useServerFn(getProducts);
   const fetchWishlist = useServerFn(getMyWishlist);
   const addWishlistFn = useServerFn(addToWishlist);
   const removeWishlistFn = useServerFn(removeFromWishlist);
@@ -49,26 +57,59 @@ function ProductPage() {
   const submitReviewFn = useServerFn(createReview);
   const [reviewsPage, setReviewsPage] = useState(1);
   const reviewsQuery = useQuery({ 
-    queryKey: ["product-reviews", product?.id, reviewsPage], 
-    queryFn: () => fetchReviews({ data: { productId: product?.id!, page: reviewsPage, pageSize: 5 } }),
-    enabled: !!product?.id
+    queryKey: ["product-reviews", productQuery.data?.id, reviewsPage], 
+    queryFn: () => fetchReviews({ data: { productId: productQuery.data?.id!, page: reviewsPage, pageSize: 5 } }),
+    enabled: !!productQuery.data?.id
+  });
+
+  const allProductsQuery = useQuery({ queryKey: ["all-products-list"], queryFn: () => fetchAllProductsFn({ data: { page: 1, pageSize: 200 } }) });
+
+  // Related products query must be declared before any early returns so
+  // the hook order remains stable between server and client renders.
+  const relatedQuery = useQuery({
+    queryKey: ["related-products", productQuery.data?.category_slug],
+    queryFn: async () => {
+      const prod = productQuery.data;
+      if (!prod) return [];
+      const result = await fetchAllProductsFn({ data: { category: prod.category_slug, pageSize: 5 } });
+      return result?.products.filter((p: any) => p.id !== prod.id).slice(0, 4) || [];
+    },
+    enabled: !!productQuery.data
   });
 
   if (productQuery.isLoading) return <div className="min-h-screen bg-background text-foreground p-6">Loading…</div>;
-  if (productQuery.error || !productQuery.data) throw notFound();
+  if (productQuery.error || !productQuery.data) {
+    return (
+      <main className="min-h-screen bg-background text-foreground p-6">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-witchy text-4xl mb-4">Not found</h1>
+          <p className="mb-4 text-muted-foreground">We couldn't find that item in the apothecary.</p>
+          <p className="mb-6 text-sm text-muted-foreground">Requested slug: <strong>{slug}</strong></p>
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <Link to="/shop" className="underline">Back to shop</Link>
+            <Link to="/shop/" className="underline">Browse all products</Link>
+          </div>
+          <div className="mt-6 text-left">
+            <h3 className="text-witchy text-2xl mb-4">Available products</h3>
+            {allProductsQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading available products…</p>
+            ) : (
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {allProductsQuery.data?.products.map((p: any) => (
+                  <li key={p.slug}>
+                    <Link to="/shop/$slug" params={{ slug: p.slug }} className="underline">{p.name} - {p.slug}</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </main>
+    );
+  }
   const product = productQuery.data;
 
-  const isInWishlist = !!wishlistQuery.data?.some(item => item.product_id === product.id);
-
-  const relatedQuery = useQuery({ 
-    queryKey: ["related-products", product.category_slug], 
-    queryFn: async () => {
-      const fetchProductsFn = useServerFn(getProducts);
-      const result = await fetchProductsFn({ data: { category: product.category_slug, pageSize: 5 } });
-      return result?.products.filter((p: any) => p.id !== product.id).slice(0, 4);
-    },
-    enabled: !!product
-  });
+  const isInWishlist = !!wishlistQuery.data?.some(item => item.product_id === product?.id);
 
   const related = relatedQuery.data || [];
 
@@ -87,7 +128,7 @@ function ProductPage() {
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-card">
           <img
-            src={product.image}
+            src={product.image || (product.images && product.images[0]) || defaultProductImg}
             alt={product.name}
             width={1024}
             height={1024}

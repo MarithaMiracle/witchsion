@@ -4,10 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Heart } from "lucide-react";
-import { toggleContentCommentLike } from "@/lib/content.functions";
-
-import { getContentBySlug, getContentComments, createContentComment, getContentLikes, toggleContentLike } from "@/lib/content.functions";
+import { Heart, ArrowLeft } from "lucide-react";
+import { getContentBySlug, getContentLikes, toggleContentLike, getPublishedContent } from "@/lib/content.functions";
 import { useAuth } from "@/lib/auth";
 import { Link } from "@tanstack/react-router";
 
@@ -15,17 +13,20 @@ export const Route = createFileRoute("/blog/$slug")({
   component: BlogPostPage,
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center text-center">
-      <div>
+        <div>
         <h1 className="text-witchy text-5xl">lost</h1>
-        <Link to="/blog" className="mt-6 inline-block text-xs uppercase tracking-[0.2em] underline">
-          Back to blog
+        <Link
+          to="/blog"
+          className="mt-6 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft size={12} /> BACK TO BLOG
         </Link>
       </div>
     </div>
   ),
   head: (ctx) => ({
     meta: [
-      { title: `${ctx.params.slug} — Witchsion Blog` },
+      { title: `${ctx.params.slug} - Witchsion Blog` },
     ],
   }),
 });
@@ -33,24 +34,22 @@ export const Route = createFileRoute("/blog/$slug")({
 function BlogPostPage() {
   const { slug } = Route.useParams();
   const fetchContent = useServerFn(getContentBySlug);
-  const fetchComments = useServerFn(getContentComments);
-  const addComment = useServerFn(createContentComment);
+  
   const fetchLikes = useServerFn(getContentLikes);
   const toggleLike = useServerFn(toggleContentLike);
-  const toggleCommentLike = useServerFn(toggleContentCommentLike);
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [commentText, setCommentText] = useState("");
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  
 
   const contentQuery = useQuery({
     queryKey: ["blog-post", slug],
     queryFn: () => fetchContent({ data: { slug } }),
   });
 
-  const commentsQuery = useQuery({
-    queryKey: ["blog-comments", contentQuery.data?.id],
-    queryFn: () => fetchComments({ data: { contentId: contentQuery.data!.id } }),
+  const fetchPublished = useServerFn(getPublishedContent);
+  const relatedQuery = useQuery({
+    queryKey: ["related-posts", contentQuery.data?.id],
+    queryFn: () => fetchPublished({ data: { type: 'blog', page: 1, pageSize: 3 } }),
     enabled: !!contentQuery.data?.id,
   });
 
@@ -60,14 +59,7 @@ function BlogPostPage() {
     enabled: !!contentQuery.data?.id,
   });
 
-  const commentMutation = useMutation({
-    mutationFn: (text: string) => addComment({ data: { contentId: contentQuery.data!.id, content: text, parentId: replyingTo || undefined } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blog-comments", contentQuery.data?.id] });
-      setCommentText("");
-      setReplyingTo(null);
-    },
-  });
+  
 
   const likeMutation = useMutation({
     mutationFn: () => toggleLike({ data: { contentId: contentQuery.data!.id } }),
@@ -119,6 +111,14 @@ function BlogPostPage() {
   return (
     <div className="w-full">
       <article className="mx-auto max-w-3xl px-6 py-16">
+        <div className="mb-6">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft size={12} /> BACK TO BLOG
+          </Link>
+        </div>
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           {post.type || 'blog'}
         </span>
@@ -161,153 +161,24 @@ function BlogPostPage() {
           </button>
         </div>
 
-        {/* Comments Section */}
-        <div className="mt-24 border-t border-border pt-12">
-          <h2 className="text-witchy text-4xl mb-8">Comments</h2>
-          
-          {user ? (
-            <form 
-              onSubmit={async (e) => { 
-                e.preventDefault(); 
-                if (commentText.trim()) {
-                  try {
-                    await commentMutation.mutateAsync(commentText);
-                  } catch (err) {
-                    console.error("Failed to post comment:", err);
-                  }
-                }
-              }}
-              className="mb-12"
-            >
-              {replyingTo && (
-                <div className="mb-2 flex items-center justify-between bg-muted/20 px-4 py-2 text-sm">
-                  <span className="text-muted-foreground italic">Replying to comment...</span>
-                  <button type="button" onClick={() => setReplyingTo(null)} className="text-foreground hover:underline">Cancel</button>
-                </div>
-              )}
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Share your thoughts..."
-                className="w-full bg-card border border-border p-4 text-sm focus:outline-none focus:border-foreground min-h-[100px]"
-                required
-              />
-              <button
-                type="submit"
-                disabled={commentMutation.isPending || !commentText.trim()}
-                className="mt-4 bg-foreground text-background px-6 py-2 text-[10px] uppercase tracking-[0.2em] hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {commentMutation.isPending ? "Posting..." : "Post Comment"}
-              </button>
-            </form>
+        {/* Recommended posts */}
+        <div className="mt-20 border-t border-border pt-12">
+          <h2 className="text-witchy text-3xl mb-6">Recommended</h2>
+          {relatedQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading recommendations…</p>
           ) : (
-            <div className="mb-12 bg-card/50 border border-border p-6 text-center">
-              <p className="font-serif italic text-muted-foreground mb-4">You must be logged in to leave a comment.</p>
-              <Link to="/auth" className="inline-block bg-foreground text-background px-6 py-2 text-[10px] uppercase tracking-[0.2em]">
-                Log In
-              </Link>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {relatedQuery.data?.content.filter((p: any) => p.id !== contentQuery.data?.id).slice(0,3).map((p: any) => (
+                <div key={p.id} className="border border-border bg-card/40 p-4">
+                  <Link to={`/blog/${p.slug}`} className="text-witchy block mb-2">{p.title}</Link>
+                  <p className="text-sm text-muted-foreground">{p.excerpt || (p.content || '').slice(0,120) + '…'}</p>
+                </div>
+              ))}
             </div>
           )}
-
-          <div className="space-y-8">
-            {commentsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading comments...</p>
-            ) : commentsQuery.data?.length === 0 ? (
-              <p className="font-serif italic text-muted-foreground">No comments yet. Be the first to share your thoughts!</p>
-            ) : (
-              commentsQuery.data?.filter((c: any) => !c.parent_id).map((comment: any) => (
-                <CommentNode 
-                  key={comment.id} 
-                  comment={comment} 
-                  allComments={commentsQuery.data || []} 
-                  onReply={(id) => {
-                    setReplyingTo(id);
-                    document.querySelector('textarea')?.focus();
-                  }}
-                  user={user}
-                  onLike={async (id) => {
-                    // Optimistic update for comment likes
-                    const previousComments = queryClient.getQueryData(["blog-comments", contentQuery.data?.id]);
-                    queryClient.setQueryData(["blog-comments", contentQuery.data?.id], (old: any[]) => {
-                      if (!old) return old;
-                      return old.map(c => {
-                        if (c.id === id) {
-                          const hasLiked = c.content_comment_likes?.some((l: any) => l.user_id === user?.id);
-                          const newLikes = hasLiked 
-                            ? c.content_comment_likes.filter((l: any) => l.user_id !== user?.id)
-                            : [...(c.content_comment_likes || []), { user_id: user?.id }];
-                          return { ...c, content_comment_likes: newLikes };
-                        }
-                        return c;
-                      });
-                    });
-
-                    try {
-                      await toggleCommentLike({ data: { commentId: id } });
-                    } catch (err) {
-                      console.error(err);
-                      // Revert on error
-                      queryClient.setQueryData(["blog-comments", contentQuery.data?.id], previousComments);
-                    } finally {
-                      queryClient.invalidateQueries({ queryKey: ["blog-comments", contentQuery.data?.id] });
-                    }
-                  }}
-                />
-              ))
-            )}
-          </div>
         </div>
       </article>
     </div>
   );
 }
 
-function CommentNode({ comment, allComments, onReply, user, onLike }: { comment: any, allComments: any[], onReply: (id: string) => void, user: any, onLike: (id: string) => void }) {
-  const replies = allComments.filter(c => c.parent_id === comment.id);
-  const likesCount = comment.content_comment_likes?.length || 0;
-  const hasLiked = user && comment.content_comment_likes?.some((l: any) => l.user_id === user.id);
-  
-  return (
-    <div className="pb-6 border-b border-border/20 last:border-0 mb-6">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center text-xs uppercase">
-          {comment.profiles?.full_name?.charAt(0) || '?'}
-        </div>
-        <div>
-          <div className="text-sm font-medium">{comment.profiles?.full_name || 'Anonymous'}</div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            {format(new Date(comment.created_at), "d MMM yyyy, h:mm a")}
-          </div>
-        </div>
-      </div>
-      <p className="text-foreground/80 mb-3">{comment.content}</p>
-      
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => user ? onLike(comment.id) : alert('Please log in to like this comment.')}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] transition-colors group"
-        >
-          <Heart size={12} className={hasLiked ? 'fill-foreground text-foreground' : 'text-muted-foreground group-hover:text-foreground'} />
-          <span className={hasLiked ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}>{likesCount}</span>
-        </button>
-
-        {user && (
-          <button 
-            onClick={() => onReply(comment.id)}
-            className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Reply
-          </button>
-        )}
-      </div>
-
-      {replies.length > 0 && (
-        <div className="mt-6 pl-6 sm:pl-8 border-l border-border/30">
-          {replies.map(reply => (
-            <CommentNode key={reply.id} comment={reply} allComments={allComments} onReply={onReply} user={user} onLike={onLike} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}

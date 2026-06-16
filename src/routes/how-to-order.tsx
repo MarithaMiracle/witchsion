@@ -6,17 +6,17 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const Route = createFileRoute("/how-to-order")({
   head: () => ({
     meta: [
-      { title: "How To Order — Witchsion" },
+    { title: "How To Order - Witchsion" },
       {
         name: "description",
         content:
           "How to order from Witchsion: choose your items, pay, and send your delivery details. Shipping worldwide via DHL, within Nigeria via GIG.",
       },
-      { property: "og:title", content: "How To Order — Witchsion" },
+      { property: "og:title", content: "How To Order - Witchsion" },
       {
         property: "og:description",
         content:
-          "How to order from Witchsion — payments, installments and shipping.",
+          "How to order from Witchsion - payments, installments and shipping.",
       },
     ],
   }),

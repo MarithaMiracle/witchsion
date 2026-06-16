@@ -1,5 +1,5 @@
 /**
- * Atmospheric drifting orbs — pure CSS, no JS animation loop.
+ * Atmospheric drifting orbs - pure CSS, no JS animation loop.
  * Sits behind hero sections.
  */
 export function MysticBackground() {

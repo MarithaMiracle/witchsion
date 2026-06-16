@@ -15,34 +15,20 @@ export const chatWithConcierge = createServerFn({ method: "POST" })
     // Grok AI API endpoint (xAI)
     const grokApiKey = process.env.GROK_API_KEY;
     if (!grokApiKey) {
-      // Fallback to mock responses if no API key
+      // Fallback to concise, business-focused mock responses if no API key
       const mockResponses = [
-        "Greetings, seeker! How may I assist you on your spiritual journey today? ✨",
-        "The stars are aligned in your favor! What can I help you manifest?",
-        "Welcome to Witchsion! I'm here to guide you to the perfect tools for your practice.",
-        "I sense great energy around you! What would you like to explore today?",
+        "We offer charged oils, spell jars, incenses, crystals, and tarot/consultations—what are you seeking?",
+        "Tell me a goal (e.g., 'protection') and I will suggest 1–3 products and a next step.",
+        "To book a reading, visit /book or tell me a preferred date and I will guide you.",
       ];
       return {
         response: mockResponses[Math.floor(Math.random() * mockResponses.length)],
-        sentiment: "positive",
+        sentiment: "neutral",
       };
     }
 
     // Build the system prompt with knowledge base context
-    const systemPrompt = `You are Witchsion's AI Spiritual Concierge - a warm, mystical guide for modern witches and spiritual seekers. 
-
-About Witchsion:
-- We sell hand-charged oils, spell jars, spiritual baths, smudge, incense, crystals, and more
-- We offer tarot readings, spiritual guidance, and spell-work consultations
-
-Your role:
-- Help customers find products, book consultations, answer FAQs, and assist with orders
-- Be warm, mystical, and encouraging
-- Be available 24/7
-
-Languages: English, French, Spanish, Portuguese
-
-Respond in the user's language (${language}).`;
+    const systemPrompt = `You are Witchsion's AI Concierge. Be concise (max 2 sentences). Focus only on what Witchsion directly offers: charged oils, conjured oils, incenses, smudge, spell jars, spiritual baths, crystals, tarot readings, and consultations. When asked for product recommendations, suggest up to 3 items by name with a one-line reason and price if known. For bookings, direct users to /book or provide a single next step. For shipping/returns/orders, give a brief actionable reply. Avoid flowery language; be clear, knowledgeable and helpful. Languages: English, French, Spanish, Portuguese. Respond in the user's language (${language}).`;
 
     // Call Grok API (xAI)
     const response = await fetch("https://api.x.ai/v1/chat/completions", {
