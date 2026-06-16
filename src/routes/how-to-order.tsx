@@ -51,19 +51,19 @@ function HowToOrder() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
 
-      <section className="border-b border-border/40 bg-card/30 px-6 py-20 md:py-28">
+      <section className="border-b border-border/40 bg-card/30 px-4 sm:px-6 py-14 sm:py-20 md:py-28">
         <div className="mx-auto max-w-7xl">
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             the ritual of ordering
           </span>
-          <h1 className="text-witchy mt-4 text-6xl md:text-8xl">how to order</h1>
+          <h1 className="text-witchy mt-4 text-4xl sm:text-6xl md:text-8xl">how to order</h1>
           <p className="font-serif mt-4 max-w-2xl text-lg italic text-muted-foreground">
             A simple four-step process. Hand-prepared on order, sent with care.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-6 py-20">
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-14 sm:py-20">
         <ol className="space-y-2">
           {steps.map((s) => (
             <li
@@ -80,7 +80,7 @@ function HowToOrder() {
         </ol>
       </section>
 
-      <section className="mx-auto max-w-5xl px-6 pb-20">
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 pb-20">
         <div className="grid gap-px bg-border md:grid-cols-2">
           <div className="bg-background p-8">
             <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -106,7 +106,7 @@ function HowToOrder() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 pb-32 text-center">
+      <section className="mx-auto max-w-3xl px-4 sm:px-6 pb-32 text-center">
         <p className="font-serif text-xl italic text-foreground">
           Thank you for shopping with us.
         </p>

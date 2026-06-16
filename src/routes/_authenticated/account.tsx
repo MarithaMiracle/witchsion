@@ -106,18 +106,18 @@ function AccountPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
               the witch's ledger
             </span>
-            <h1 className="text-witchy mt-3 text-5xl md:text-6xl">your account</h1>
+            <h1 className="text-witchy mt-3 text-4xl sm:text-5xl md:text-6xl">your account</h1>
             <p className="font-serif mt-3 text-sm italic text-muted-foreground">
               {user?.email}
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:gap-3">
             {isAdmin && (
               <Link
                 to="/admin"
@@ -136,14 +136,22 @@ function AccountPage() {
         </div>
 
       {/* Tabs */}
-      <div className="mt-12 flex gap-6 border-b border-border">
-        {(['orders', 'bookings', 'wishlist', 'ai-advisor'] as const).map((tab) => (
+      <div className="scrollbar-none mt-12 flex gap-4 overflow-x-auto border-b border-border sm:gap-6">
+        {(
+          [
+            ["orders", "Orders"],
+            ["bookings", "Bookings"],
+            ["wishlist", "Wishlist"],
+            ["ai-advisor", "AI Advisor"],
+          ] as const
+        ).map(([tab, label]) => (
           <button
             key={tab}
+            type="button"
             onClick={() => setActiveTab(tab)}
-            className={`pb-4 text-[10px] uppercase tracking-[0.3em] transition-colors ${activeTab === tab ? 'text-foreground border-b-2 border-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`shrink-0 touch-target pb-4 text-[10px] uppercase tracking-[0.3em] transition-colors ${activeTab === tab ? "border-b-2 border-foreground text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
-            {tab}
+            {label}
           </button>
         ))}
       </div>

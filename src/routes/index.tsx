@@ -67,11 +67,9 @@ function HomePage() {
         <div className="absolute inset-0 bg-veil" />
         <MysticBackground />
 
-        <div className="relative mx-auto flex max-w-7xl flex-col items-start gap-10 px-6 pb-32 pt-32 md:pt-40 lg:pb-44">
-          
-
+        <div className="relative mx-auto flex max-w-7xl flex-col items-start gap-8 px-4 pb-24 pt-24 sm:gap-10 sm:px-6 sm:pb-32 sm:pt-32 md:pt-40 lg:pb-44">
           <h1
-            className="animate-float-up text-witchy text-balance text-6xl leading-[0.9] sm:text-7xl md:text-[7.5rem] lg:text-[9rem]"
+            className="animate-float-up text-witchy text-balance text-5xl leading-[0.95] sm:text-6xl sm:leading-[0.9] md:text-[7.5rem] lg:text-[9rem]"
             style={{ animationDelay: "0.1s" }}
           >
             welcome to <br />
@@ -109,7 +107,7 @@ function HomePage() {
       </section>
 
       {/* CATEGORY GRID */}
-      <section className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
+      <section className="relative mx-auto max-w-7xl px-4 sm:px-6 py-24 md:py-32">
         <div className="mb-12 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
@@ -154,7 +152,7 @@ function HomePage() {
       {/* CONSULTATIONS */}
       <section className="relative isolate overflow-hidden border-y border-border/40 bg-card/40 py-24 md:py-32">
         <MysticBackground />
-        <div className="relative mx-auto grid max-w-7xl gap-16 px-6 lg:grid-cols-[1fr_1.2fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-16 px-4 sm:px-6 lg:grid-cols-[1fr_1.2fr] lg:items-center">
           <div className="relative">
             <img
               src={owlArt}
@@ -204,7 +202,7 @@ function HomePage() {
       </section>
 
       {/* ETHOS */}
-      <section className="mx-auto max-w-4xl px-6 py-32 text-center">
+      <section className="mx-auto max-w-4xl px-4 sm:px-6 py-32 text-center">
         <div className="ornate-divider mb-10 text-[10px] uppercase tracking-[0.3em]">
           <span>our practice</span>
         </div>
@@ -218,7 +216,7 @@ function HomePage() {
       </section>
 
       {/* Latest Blog Posts */}
-      <section className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
+      <section className="relative mx-auto max-w-7xl px-4 sm:px-6 py-24 md:py-32">
         <div className="mb-12 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
@@ -280,7 +278,7 @@ function HomePage() {
       </section>
 
       {/* All Categories */}
-      <section className="mx-auto max-w-7xl px-6 pb-24">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-24">
         <div className="flex justify-center">
           <div className="inline-grid grid-cols-1 md:grid-cols-3 gap-px bg-background w-full md:w-auto">
             {categories.map((c) => (

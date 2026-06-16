@@ -16,11 +16,11 @@ function CartPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-5xl px-6 py-16">
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           gathered for ritual
         </span>
-        <h1 className="text-witchy mt-3 text-5xl md:text-6xl">your bag</h1>
+        <h1 className="text-witchy mt-3 text-4xl sm:text-5xl md:text-6xl">your bag</h1>
 
         {!items.length ? (
           <div className="mt-12">
@@ -35,36 +35,56 @@ function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-12 grid gap-12 lg:grid-cols-[1.4fr_1fr]">
+          <div className="mt-12 grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
             <ul className="space-y-6">
               {items.map((i) => (
-                <li key={i.slug} className="flex gap-4 border-b border-border/60 pb-6">
-                  <img src={i.image} alt={i.name} className="h-24 w-24 object-cover" />
-                  <div className="flex-1">
-                    <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                      {i.category}
-                    </div>
-                    <div className="font-serif text-lg italic">{i.name}</div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="flex items-center border border-border">
-                        <button onClick={() => setQty(i.slug, i.quantity - 1)} className="px-2 py-2">
-                          <Minus size={12} />
-                        </button>
-                        <div className="w-8 text-center text-sm">{i.quantity}</div>
-                        <button onClick={() => setQty(i.slug, i.quantity + 1)} className="px-2 py-2">
-                          <Plus size={12} />
+                <li
+                  key={i.slug}
+                  className="flex flex-col gap-4 border-b border-border/60 pb-6 sm:flex-row sm:items-start"
+                >
+                  <div className="flex gap-4 sm:flex-1">
+                    <img
+                      src={i.image}
+                      alt={i.name}
+                      className="h-20 w-20 shrink-0 object-cover sm:h-24 sm:w-24"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                        {i.category}
+                      </div>
+                      <div className="font-serif text-lg italic">{i.name}</div>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <div className="flex items-center border border-border">
+                          <button
+                            type="button"
+                            onClick={() => setQty(i.slug, i.quantity - 1)}
+                            className="touch-target px-3 py-2"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <div className="w-10 text-center text-sm">{i.quantity}</div>
+                          <button
+                            type="button"
+                            onClick={() => setQty(i.slug, i.quantity + 1)}
+                            className="touch-target px-3 py-2"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => remove(i.slug)}
+                          className="touch-target p-2 text-muted-foreground hover:text-foreground"
+                          aria-label="Remove"
+                        >
+                          <Trash2 size={16} />
                         </button>
                       </div>
-                      <button
-                        onClick={() => remove(i.slug)}
-                        className="text-muted-foreground hover:text-foreground"
-                        aria-label="Remove"
-                      >
-                        <Trash2 size={14} />
-                      </button>
                     </div>
                   </div>
-                  <div className="font-serif text-base">
+                  <div className="font-serif text-base sm:text-right sm:pl-2">
                     {formatPrice(i.price * i.quantity, i.currency)}
                   </div>
                 </li>
@@ -77,7 +97,7 @@ function CartPage() {
               </button>
             </ul>
 
-            <aside className="border border-border bg-card/40 p-8 lg:sticky lg:top-24 lg:self-start">
+            <aside className="border border-border bg-card/40 p-6 sm:p-8 lg:sticky lg:top-20 lg:self-start">
               <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Summary</div>
               <div className="mt-6 flex justify-between text-sm">
                 <span>Subtotal</span>

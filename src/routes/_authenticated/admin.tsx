@@ -164,11 +164,12 @@ function AdminPage() {
 
   const TabButton = ({ id, label }: { id: any; label: string }) => (
     <button
+      type="button"
       onClick={() => setActiveTab(id)}
-      className={`px-6 py-3 border-b-2 text-sm tracking-widest uppercase transition-colors ${
+      className={`shrink-0 touch-target px-4 py-3 text-[10px] tracking-widest uppercase transition-colors sm:px-6 sm:text-sm ${
         activeTab === id
-          ? 'border-foreground text-foreground'
-          : 'border-transparent text-muted-foreground hover:text-foreground'
+          ? "border-b-2 border-foreground text-foreground"
+          : "border-b-2 border-transparent text-muted-foreground hover:text-foreground"
       }`}
     >
       {label}
@@ -248,11 +249,11 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16">
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           the inner sanctum
         </span>
-        <h1 className="text-witchy mt-3 text-5xl md:text-6xl">admin</h1>
+        <h1 className="text-witchy mt-3 text-4xl sm:text-5xl md:text-6xl">admin</h1>
         
         {/* Refresh Button */}
         <button
@@ -263,12 +264,14 @@ function AdminPage() {
         </button>
 
         {/* Tabs */}
-        <div className="mt-8 border-b border-border">
-          <TabButton id="overview" label="Overview" />
-          <TabButton id="products" label="Products" />
-          <TabButton id="orders" label="Orders" />
-          <TabButton id="bookings" label="Bookings" />
-          <TabButton id="content" label="Content" />
+        <div className="scrollbar-none mt-8 -mx-4 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:px-0">
+          <div className="flex min-w-max sm:min-w-0">
+            <TabButton id="overview" label="Overview" />
+            <TabButton id="products" label="Products" />
+            <TabButton id="orders" label="Orders" />
+            <TabButton id="bookings" label="Bookings" />
+            <TabButton id="content" label="Content" />
+          </div>
         </div>
 
         {/* Tab Content */}

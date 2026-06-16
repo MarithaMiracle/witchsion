@@ -29,7 +29,7 @@ function BlogPage() {
   if (contentQuery.isLoading) {
     return (
       <div className="w-full">
-        <p className="px-6 py-24 text-sm text-muted-foreground">Loading…</p>
+        <p className="px-4 sm:px-6 py-24 text-sm text-muted-foreground">Loading…</p>
       </div>
     );
   }
@@ -37,7 +37,7 @@ function BlogPage() {
   if (contentQuery.error) {
     return (
       <div className="w-full">
-        <div className="px-6 py-24">
+        <div className="px-4 sm:px-6 py-24">
           <h1 className="text-witchy text-4xl">error</h1>
           <p className="font-serif mt-3 text-sm italic text-muted-foreground">
             Something went wrong.
@@ -53,11 +53,11 @@ function BlogPage() {
 
   return (
     <div className="w-full">
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           the grimoire
         </span>
-        <h1 className="text-witchy mt-3 text-5xl md:text-6xl">blog</h1>
+        <h1 className="text-witchy mt-3 text-4xl sm:text-5xl md:text-6xl">blog</h1>
 
           <div className="mt-12 grid gap-8">
           {content.length > 0 ? (

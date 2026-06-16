@@ -42,21 +42,22 @@ function CommunityPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="flex items-center justify-between mb-12">
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
+        <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
               the circle
             </span>
-            <h1 className="text-witchy mt-3 text-5xl">community</h1>
+            <h1 className="text-witchy mt-3 text-4xl sm:text-5xl">community</h1>
             <p className="font-serif mt-4 text-lg italic text-muted-foreground">
               Connect, share, and grow together.
             </p>
           </div>
           {user && (
             <button
+              type="button"
               onClick={() => setShowNewPostForm(!showNewPostForm)}
-              className="px-6 py-3 border border-foreground text-xs uppercase tracking-[0.2em] hover:bg-foreground hover:text-background transition-colors"
+              className="touch-target w-full border border-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-foreground hover:text-background transition-colors sm:w-auto"
             >
               {showNewPostForm ? "Cancel" : "New Post"}
             </button>
@@ -126,30 +127,33 @@ function CommunityPage() {
         )}
 
         <div className="grid gap-8 lg:grid-cols-4">
-          {/* Sidebar - Groups */}
           <div className="lg:col-span-1">
-            <div className="border border-border bg-card/40 p-6">
-              <h3 className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mb-6">
+            <div className="border border-border bg-card/40 p-4 sm:p-6">
+              <h3 className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mb-4 sm:mb-6">
                 Groups
               </h3>
-              <div className="space-y-3">
+              <div className="scrollbar-none flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:overflow-visible lg:pb-0">
                 <button
+                  type="button"
                   onClick={() => setActiveGroupSlug(undefined)}
-                  className={`w-full text-left text-sm py-2 hover:text-foreground transition-colors ${!activeGroupSlug ? 'text-foreground' : 'text-muted-foreground'}`}
+                  className={`shrink-0 touch-target rounded-sm border px-4 py-2 text-left text-sm transition-colors lg:w-full lg:rounded-none lg:border-0 lg:px-0 lg:py-2 ${!activeGroupSlug ? "border-foreground text-foreground lg:border-0" : "border-border text-muted-foreground hover:text-foreground"}`}
                 >
                   All Posts
                 </button>
                 {groupsQuery.isLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading...</p>
-                ) : groupsQuery.data?.map((group) => (
-                  <button
-                    key={group.id}
-                    onClick={() => setActiveGroupSlug(group.slug)}
-                    className={`w-full text-left text-sm py-2 hover:text-foreground transition-colors ${activeGroupSlug === group.slug ? 'text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    {group.name}
-                  </button>
-                ))}
+                  <p className="shrink-0 px-2 text-sm text-muted-foreground lg:px-0">Loading...</p>
+                ) : (
+                  groupsQuery.data?.map((group) => (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => setActiveGroupSlug(group.slug)}
+                      className={`shrink-0 touch-target rounded-sm border px-4 py-2 text-left text-sm transition-colors lg:w-full lg:rounded-none lg:border-0 lg:px-0 lg:py-2 ${activeGroupSlug === group.slug ? "border-foreground text-foreground lg:border-0" : "border-border text-muted-foreground hover:text-foreground"}`}
+                    >
+                      {group.name}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -163,7 +167,7 @@ function CommunityPage() {
             ) : (
               <div className="space-y-8">
                 {postsQuery.data.posts.map((post) => (
-                  <div key={post.id} className="border border-border bg-card/40 p-8">
+                  <div key={post.id} className="border border-border bg-card/40 p-5 sm:p-8">
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">

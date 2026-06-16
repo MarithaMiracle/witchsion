@@ -82,14 +82,14 @@ function CheckoutPage() {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <SiteHeader />
-        <div className="mx-auto max-w-2xl px-6 py-24 text-center">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-24 text-center">
           <h1 className="text-witchy text-5xl">an empty altar</h1>
           <p className="font-serif mt-3 text-sm italic text-muted-foreground">
             Add something to your bag first.
           </p>
           <Link
             to="/shop"
-            className="mt-8 inline-block border border-foreground/40 px-6 py-3 text-[10px] uppercase tracking-[0.3em] hover:bg-foreground hover:text-background"
+            className="mt-8 inline-block border border-foreground/40 px-4 sm:px-6 py-3 text-[10px] uppercase tracking-[0.3em] hover:bg-foreground hover:text-background"
           >
             To the shop
           </Link>
@@ -101,8 +101,8 @@ function CheckoutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <h1 className="text-witchy text-5xl md:text-6xl">checkout</h1>
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-16">
+        <h1 className="text-witchy text-4xl sm:text-5xl md:text-6xl">checkout</h1>
 
         <form onSubmit={pay} className="mt-12 grid gap-12 lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-8">

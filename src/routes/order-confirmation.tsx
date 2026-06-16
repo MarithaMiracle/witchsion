@@ -49,7 +49,7 @@ function ConfirmationPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-2xl px-6 py-24 text-center">
+      <section className="mx-auto max-w-2xl px-4 sm:px-6 py-24 text-center">
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           received
         </span>
@@ -89,10 +89,10 @@ function ConfirmationPage() {
         )}
 
         <div className="mt-12 flex flex-wrap justify-center gap-3">
-          <Link to="/account" className="border border-foreground/40 px-6 py-3 text-[10px] uppercase tracking-[0.3em] hover:bg-foreground hover:text-background">
+          <Link to="/account" className="border border-foreground/40 px-4 sm:px-6 py-3 text-[10px] uppercase tracking-[0.3em] hover:bg-foreground hover:text-background">
             View account
           </Link>
-          <Link to="/shop" className="border border-border px-6 py-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground">
+          <Link to="/shop" className="border border-border px-4 sm:px-6 py-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground">
             Keep shopping
           </Link>
         </div>

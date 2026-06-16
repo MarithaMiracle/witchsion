@@ -88,7 +88,7 @@ function BlogPostPage() {
   if (contentQuery.isLoading) {
     return (
       <div className="w-full">
-        <p className="px-6 py-24 text-sm text-muted-foreground">Loading…</p>
+        <p className="px-4 sm:px-6 py-24 text-sm text-muted-foreground">Loading…</p>
       </div>
     );
   }
@@ -96,7 +96,7 @@ function BlogPostPage() {
   if (contentQuery.error || !contentQuery.data) {
     return (
       <div className="w-full">
-        <div className="px-6 py-24">
+        <div className="px-4 sm:px-6 py-24">
           <h1 className="text-witchy text-4xl">not found</h1>
           <p className="font-serif mt-3 text-sm italic text-muted-foreground">
             That post doesn't exist.
@@ -110,7 +110,7 @@ function BlogPostPage() {
 
   return (
     <div className="w-full">
-      <article className="mx-auto max-w-3xl px-6 py-16">
+      <article className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-16">
         <div className="mb-6">
           <Link
             to="/blog"
@@ -122,7 +122,7 @@ function BlogPostPage() {
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           {post.type || 'blog'}
         </span>
-        <h1 className="text-witchy mt-3 text-5xl md:text-6xl">{post.title}</h1>
+        <h1 className="text-witchy mt-3 text-4xl sm:text-5xl md:text-6xl">{post.title}</h1>
         
         <div className="mt-6 flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           {post.published_at && (

@@ -37,7 +37,7 @@ function RouteComponent() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-3xl px-6 py-24 text-center">
+      <section className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center">
         {status === 'loading' && <p className="text-lg">Confirming your booking…</p>}
         {status === 'missing' && (
           <div>

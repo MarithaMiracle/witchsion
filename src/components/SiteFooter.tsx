@@ -3,8 +3,8 @@ import owlArt from "@/assets/mystic-owl.png";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-32 border-t border-border/40 bg-background">
-      <div className="mx-auto max-w-7xl px-6 py-16">
+    <footer className="mt-16 border-t border-border/40 bg-background sm:mt-24 md:mt-32">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="grid gap-12 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center">
@@ -45,10 +45,10 @@ export function SiteFooter() {
           <span>made with intention</span>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 text-[11px] text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div className="mt-8 flex flex-col gap-4 text-[11px] text-muted-foreground md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Witchsion. All rights reserved.</p>
-          <p className="max-w-xl text-pretty flex items-center gap-4">
-            <span className="mr-2">Follow us:</span>
+          <p className="flex max-w-xl flex-wrap items-center gap-x-4 gap-y-2 text-pretty">
+            <span className="w-full sm:w-auto">Follow us:</span>
             <a href="https://www.instagram.com/witchsion" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-foreground text-muted-foreground">
               Instagram
             </a>

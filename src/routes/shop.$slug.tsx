@@ -119,7 +119,7 @@ function ProductPageInner({ slug }: { slug: string }) {
 
   return (
     <main>
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
         <Link
           to="/shop"
           className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground transition-colors hover:text-foreground"
@@ -128,7 +128,7 @@ function ProductPageInner({ slug }: { slug: string }) {
         </Link>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 pb-24 lg:grid-cols-2 lg:gap-20">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 sm:gap-12 sm:px-6 sm:pb-24 lg:grid-cols-2 lg:gap-20">
         <div className="relative aspect-square overflow-hidden bg-card">
           <img
             src={productImage}
@@ -143,7 +143,7 @@ function ProductPageInner({ slug }: { slug: string }) {
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             {product.category?.name || product.category_slug}
           </span>
-          <h1 className="text-witchy mt-3 text-balance text-5xl leading-tight md:text-6xl">
+          <h1 className="text-witchy mt-3 text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
             {product.name}
           </h1>
           <p className="font-serif mt-4 text-lg italic text-muted-foreground">{product.blurb}</p>
@@ -166,12 +166,12 @@ function ProductPageInner({ slug }: { slug: string }) {
             </div>
           </div>
 
-          <div className="mt-12 flex items-stretch gap-3">
-            <div className="flex items-center border border-border">
+          <div className="mt-10 flex flex-col gap-3 sm:mt-12 sm:flex-row sm:items-stretch">
+            <div className="flex items-center border border-border self-start">
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="px-3 py-3 text-muted-foreground transition-colors hover:text-foreground"
+                className="touch-target px-3 py-3 text-muted-foreground transition-colors hover:text-foreground"
                 aria-label="Decrease quantity"
               >
                 <Minus size={14} />
@@ -180,7 +180,7 @@ function ProductPageInner({ slug }: { slug: string }) {
               <button
                 type="button"
                 onClick={() => setQty((q) => q + 1)}
-                className="px-3 py-3 text-muted-foreground transition-colors hover:text-foreground"
+                className="touch-target px-3 py-3 text-muted-foreground transition-colors hover:text-foreground"
                 aria-label="Increase quantity"
               >
                 <Plus size={14} />
@@ -190,7 +190,7 @@ function ProductPageInner({ slug }: { slug: string }) {
             <button
               type="button"
               onClick={() => add(product, qty)}
-              className="flex-1 bg-foreground px-6 py-4 text-xs uppercase tracking-[0.2em] text-background transition-opacity hover:opacity-90"
+              className="w-full bg-foreground px-6 py-4 text-xs uppercase tracking-[0.2em] text-background transition-opacity hover:opacity-90 sm:flex-1"
             >
               Add to bag
             </button>
@@ -212,7 +212,7 @@ function ProductPageInner({ slug }: { slug: string }) {
                     toast.error("Failed to update wishlist");
                   }
                 }}
-                className="px-4 py-4 border border-border text-muted-foreground hover:text-foreground transition-colors"
+                className="touch-target self-start border border-border px-4 py-4 text-muted-foreground hover:text-foreground transition-colors sm:self-auto"
                 aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
               >
                 <Heart size={18} fill={isInWishlist ? "currentColor" : "none"} />
@@ -225,7 +225,7 @@ function ProductPageInner({ slug }: { slug: string }) {
       </div>
 
       {related.length > 0 && (
-        <section className="border-t border-border/40 bg-card/30 px-6 py-20">
+        <section className="border-t border-border/40 bg-card/30 px-4 py-14 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-7xl">
             <h2 className="text-witchy text-4xl md:text-5xl">also from the shelf</h2>
             <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">

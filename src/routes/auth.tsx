@@ -56,7 +56,7 @@ function AuthPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <section className="mx-auto max-w-md px-6 py-24">
+      <section className="mx-auto max-w-md px-4 sm:px-6 py-24">
         <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
           {mode === "signin" ? "return to the circle" : "join the circle"}
         </span>

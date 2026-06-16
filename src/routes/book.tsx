@@ -81,11 +81,11 @@ function BookPage() {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <SiteHeader />
-        <section className="mx-auto max-w-7xl px-6 py-20 text-center">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-14 sm:py-20 text-center">
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             sit with the witch
           </span>
-          <h1 className="text-witchy mt-4 text-6xl md:text-8xl">consultations</h1>
+          <h1 className="text-witchy mt-4 text-4xl sm:text-6xl md:text-8xl">consultations</h1>
           <p className="font-serif mt-6 text-lg italic text-muted-foreground">
             Reading the cards…
           </p>
@@ -146,30 +146,83 @@ function BookPage() {
       <SiteHeader />
 
       {/* Header */}
-      <section className="border-b border-border/40 bg-card/30 px-6 py-20 md:py-28">
+      <section className="border-b border-border/40 bg-card/30 px-4 sm:px-6 py-14 sm:py-20 md:py-28">
         <div className="mx-auto max-w-7xl">
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             sit with the witch
           </span>
-          <h1 className="text-witchy mt-4 text-6xl md:text-8xl">consultations</h1>
+          <h1 className="text-witchy mt-4 text-4xl sm:text-6xl md:text-8xl">consultations</h1>
           <p className="font-serif mt-4 max-w-2xl text-lg italic text-muted-foreground">
             Tarot readings, spiritual guidance and spell-work conversations. Sessions are private and reflective.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.2fr_1fr]">
-        {/* Booking flow */}
-        <form onSubmit={submit} className="space-y-10">
+      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-[1.2fr_1fr]">
+        {/* Summary — shown first on mobile so users see their selection while booking */}
+        <aside className="order-first lg:order-none lg:sticky lg:top-20 lg:self-start">
+          <div className="border border-border bg-card/40 p-5 sm:p-8">
+            <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+              <CalendarIcon size={14} /> Your session
+            </div>
+            {selectedService ? (
+              <>
+                <div className="font-serif mt-4 text-xl italic sm:text-2xl">
+                  {selectedService.name}
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {selectedService.description}
+                </p>
+              </>
+            ) : (
+              <p className="mt-4 text-sm italic text-muted-foreground">
+                Select a service to continue
+              </p>
+            )}
+
+            <div className="ornate-divider my-6 text-[10px] uppercase tracking-[0.3em]">
+              <span>details</span>
+            </div>
+
+            <dl className="space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Date</dt>
+                <dd className="text-right">{days[day].label}, {days[day].num}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Time</dt>
+                <dd>{slot ?? "—"}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Duration</dt>
+                <dd>{selectedService?.duration ?? "—"}</dd>
+              </div>
+              <div className="flex justify-between gap-4 border-t border-border/60 pt-3 text-foreground">
+                <dt>Price</dt>
+                <dd className="font-serif text-lg">
+                  {selectedService?.price
+                    ? formatPrice(selectedService.price, selectedService.currency!)
+                    : "By request"}
+                </dd>
+              </div>
+            </dl>
+
+            <p className="font-serif mt-6 text-xs italic text-muted-foreground">
+              You'll receive a confirmation email with payment and call details.
+            </p>
+          </div>
+        </aside>
+
+        <form onSubmit={submit} className="order-last space-y-8 sm:space-y-10 lg:order-none">
           <div>
-            <h2 className="text-witchy text-3xl">1. Choose a session</h2>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <h2 className="text-witchy text-2xl sm:text-3xl">1. Choose a session</h2>
+            <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2">
               {services.map((s) => (
                 <button
                   key={s.slug}
                   type="button"
                   onClick={() => setServiceSlug(s.slug)}
-                  className={`border p-5 text-left transition-colors ${
+                  className={`touch-target border p-4 text-left transition-colors sm:p-5 ${
                     serviceSlug === s.slug
                       ? "border-foreground bg-foreground/5"
                       : "border-border hover:border-foreground/60"
@@ -191,8 +244,8 @@ function BookPage() {
           </div>
 
           <div>
-            <h2 className="text-witchy text-3xl">2. Pick a day</h2>
-            <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
+            <h2 className="text-witchy text-2xl sm:text-3xl">2. Pick a day</h2>
+            <div className="scrollbar-none mt-4 flex gap-2 overflow-x-auto pb-2 sm:mt-6">
               {days.map((d, i) => (
                 <button
                   key={d.num}
@@ -201,7 +254,7 @@ function BookPage() {
                     setDay(i);
                     setSlot(null);
                   }}
-                  className={`shrink-0 border px-5 py-4 text-center transition-colors ${
+                  className={`touch-target shrink-0 border px-4 py-3 text-center transition-colors sm:px-5 sm:py-4 ${
                     day === i
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
@@ -217,14 +270,14 @@ function BookPage() {
           </div>
 
           <div>
-            <h2 className="text-witchy text-3xl">3. Choose a time</h2>
-            <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-6">
+            <h2 className="text-witchy text-2xl sm:text-3xl">3. Choose a time</h2>
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:grid-cols-3 md:grid-cols-6">
               {SLOTS.map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setSlot(t)}
-                  className={`border py-3 text-sm transition-colors ${
+                  className={`touch-target border py-3.5 text-sm transition-colors ${
                     slot === t
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
@@ -237,13 +290,13 @@ function BookPage() {
           </div>
 
           <div>
-            <h2 className="text-witchy text-3xl">4. Your details</h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <h2 className="text-witchy text-2xl sm:text-3xl">4. Your details</h2>
+            <div className="mt-4 grid gap-4 sm:mt-6 sm:grid-cols-2">
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Name *"
-                className="border border-border bg-transparent px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+                className="min-h-11 w-full border border-border bg-transparent px-4 py-3 text-base placeholder:text-muted-foreground focus:border-foreground focus:outline-none sm:text-sm"
                 required
               />
               <input
@@ -251,7 +304,7 @@ function BookPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="Email *"
-                className="border border-border bg-transparent px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+                className="min-h-11 w-full border border-border bg-transparent px-4 py-3 text-base placeholder:text-muted-foreground focus:border-foreground focus:outline-none sm:text-sm"
                 required
               />
               <textarea
@@ -259,7 +312,7 @@ function BookPage() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 placeholder="What would you like to focus on?"
-                className="border border-border bg-transparent px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none sm:col-span-2"
+                className="w-full border border-border bg-transparent px-4 py-3 text-base placeholder:text-muted-foreground focus:border-foreground focus:outline-none sm:col-span-2 sm:text-sm"
               />
             </div>
           </div>
@@ -267,63 +320,11 @@ function BookPage() {
           <button
             type="submit"
             disabled={busy}
-            className="inline-flex w-full items-center justify-center bg-foreground px-7 py-5 text-xs uppercase tracking-[0.3em] text-background transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
+            className="touch-target inline-flex w-full items-center justify-center bg-foreground px-7 py-5 text-xs uppercase tracking-[0.3em] text-background transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
           >
             {busy ? "Sending…" : user ? "Request session" : "Sign in & request"}
           </button>
         </form>
-
-        {/* Summary */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="border border-border bg-card/40 p-8">
-            <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-              <CalendarIcon size={14} /> Your session
-            </div>
-            {selectedService ? (
-              <>                
-                <div className="font-serif mt-4 text-2xl italic">
-                  {selectedService.name}
-                </div>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {selectedService.description}
-                </p>
-              </>
-            ) : (
-              <p className="mt-4 text-sm text-muted-foreground italic">Select a service to continue</p>
-            )}
-
-            <div className="ornate-divider my-6 text-[10px] uppercase tracking-[0.3em]">
-              <span>details</span>
-            </div>
-
-            <dl className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Date</dt>
-                <dd>{days[day].label}, {days[day].num}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Time</dt>
-                <dd>{slot ?? "-"}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Duration</dt>
-                <dd>{selectedService.duration}</dd>
-              </div>
-              <div className="flex justify-between border-t border-border/60 pt-3 text-foreground">
-                <dt>Price</dt>
-                <dd className="font-serif text-lg">
-                  {selectedService.price
-                    ? formatPrice(selectedService.price, selectedService.currency!)
-                    : "By request"}
-                </dd>
-              </div>
-            </dl>
-
-            <p className="font-serif mt-6 text-xs italic text-muted-foreground">
-              You'll receive a confirmation email with payment and call details.
-            </p>
-          </div>
-        </aside>
       </section>
 
       <SiteFooter />

@@ -42,7 +42,7 @@ function AboutPage() {
         />
         <div className="absolute inset-0 bg-veil" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-16 px-6 pb-24 pt-28 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-16 px-4 sm:px-6 pb-24 pt-28 lg:grid-cols-[1.4fr_1fr] lg:items-center">
           <div>
             <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
               the mission
@@ -67,7 +67,7 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 py-24">
+      <section className="mx-auto max-w-3xl px-4 sm:px-6 py-24">
         <div className="space-y-10 text-base leading-relaxed text-muted-foreground">
           <p className="font-serif text-2xl italic text-foreground">
             Witchsion is a fusion of <em>Witch</em> and <em>Mission</em> - a

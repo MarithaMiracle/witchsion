@@ -81,12 +81,12 @@ function ShopIndex() {
   return (
     <main>
       {/* Header */}
-      <section className="border-b border-border/40 bg-card/30 px-6 py-20 md:py-28">
+      <section className="border-b border-border/40 bg-card/30 px-4 py-14 sm:px-6 sm:py-20 md:py-28">
         <div className="mx-auto max-w-7xl">
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             the apothecary
           </span>
-          <h1 className="text-witchy mt-4 text-6xl md:text-7xl lg:text-8xl">
+          <h1 className="text-witchy mt-4 text-4xl sm:text-6xl md:text-7xl lg:text-8xl">
             {activeCategory ? activeCategory.name.toLowerCase() : "the shop"}
           </h1>
           <p className="font-serif mt-4 max-w-xl text-lg italic text-muted-foreground">
@@ -98,8 +98,8 @@ function ShopIndex() {
       </section>
 
       {/* Search and Filters */}
-      <section className="sticky top-16 z-30 border-b border-border/40 bg-background/80 px-6 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl py-4 space-y-4">
+      <section className="sticky top-14 z-30 border-b border-border/40 bg-background/80 px-4 backdrop-blur-xl sm:top-16 sm:px-6">
+        <div className="mx-auto max-w-7xl py-3 space-y-3 sm:py-4 sm:space-y-4">
           {/* Search Bar */}
           <form
             className="relative"
@@ -131,12 +131,12 @@ function ShopIndex() {
           </form>
           
           {/* Filters and Sorting */}
-          <div className="flex flex-wrap gap-2 items-center justify-between">
-            <div className="flex gap-2 overflow-x-auto items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="scrollbar-none flex gap-2 overflow-x-auto pb-1 sm:pb-0">
               <button
                 type="button"
                 onClick={() => navigate({ search: (prev) => ({ ...prev, category: undefined, page: 1 }) })}
-                className={`shrink-0 border px-4 py-2 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                className={`shrink-0 touch-target border px-4 py-2.5 text-[10px] uppercase tracking-[0.2em] transition-colors ${
                   !category
                     ? "border-foreground bg-foreground text-background"
                     : "border-border text-muted-foreground hover:text-foreground"
@@ -149,7 +149,7 @@ function ShopIndex() {
                   key={c.slug}
                   type="button"
                   onClick={() => navigate({ search: (prev) => ({ ...prev, category: c.slug, page: 1 }) })}
-                  className={`shrink-0 border px-4 py-2 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                  className={`shrink-0 touch-target border px-4 py-2.5 text-[10px] uppercase tracking-[0.2em] transition-colors ${
                     category === c.slug
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:text-foreground"
@@ -161,12 +161,14 @@ function ShopIndex() {
             </div>
             
             {/* Sorting */}
-            <div className="flex gap-2 items-center">
-              <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground shrink-0">Sort by:</label>
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground shrink-0">
+                Sort:
+              </label>
               <select
                 value={sortBy}
                 onChange={(e) => navigate({ search: (prev) => ({ ...prev, sortBy: e.target.value as any, page: 1 }) })}
-                className="bg-transparent border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground rounded-sm shrink-0"
+                className="min-h-11 min-w-0 flex-1 bg-transparent border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground rounded-sm sm:flex-none sm:min-w-[7rem]"
               >
                 <option value="created_at">Newest</option>
                 <option value="price">Price</option>
@@ -174,7 +176,7 @@ function ShopIndex() {
               </select>
               <button
                 onClick={() => navigate({ search: (prev) => ({ ...prev, sortOrder: prev.sortOrder === "asc" ? "desc" : "asc", page: 1 }) })}
-                className="border border-border px-3 py-2 text-sm hover:border-foreground transition-colors shrink-0"
+                className="touch-target min-h-11 border border-border px-3 py-2 text-sm hover:border-foreground transition-colors shrink-0"
               >
                 {sortOrder === "asc" ? "↑" : "↓"}
               </button>
@@ -184,7 +186,7 @@ function ShopIndex() {
       </section>
 
       {/* Grid */}
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         {productsData.products.length === 0 ? (
           <p className="text-center text-muted-foreground">Nothing here yet.</p>
         ) : (
