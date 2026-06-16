@@ -8,9 +8,9 @@ await esbuild.build({
   platform: "node",
   target: "node20",
   format: "esm",
-  outfile: "api/rpc.mjs",
+  outfile: "api/_handler.mjs",
   packages: "external",
   logLevel: "info",
 });
 
-console.log("API bundle written to api/rpc.mjs");
+console.log("API bundle written to api/_handler.mjs");

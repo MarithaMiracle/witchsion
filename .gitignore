@@ -10,7 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-api/rpc.mjs
+api/_handler.mjs
 .output
 .vinxi
 .tanstack/**

@@ -19,12 +19,13 @@ export function createApiFn<TInput, TOutput>(name: string): ApiFn<TInput, TOutpu
     });
 
     if (!res.ok) {
+      const text = await res.text();
       let message = `API error: ${res.status}`;
       try {
-        const errBody = await res.json();
+        const errBody = JSON.parse(text) as { error?: string };
         message = errBody.error || message;
       } catch {
-        message = (await res.text()) || message;
+        if (text) message = text;
       }
       throw new Error(message);
     }
