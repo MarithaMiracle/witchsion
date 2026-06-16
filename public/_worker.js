@@ -1,2 +1,2 @@
 export { default }
-from '../dist/server/server.js'
+from './server/server.js'
