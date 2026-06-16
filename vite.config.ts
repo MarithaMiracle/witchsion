@@ -1,14 +1,8 @@
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { defineConfig } from "@tanstack/start/config";
 
 export default defineConfig({
-  tanstackStart: {
-    server: {
-      entry: "src/server.ts",
-    },
-    routers: {
-      server: {
-        preset: "cloudflare-pages",
-      },
-    },
+  server: {
+    preset: "cloudflare-pages",
+    entry: "src/server.ts",
   },
 });
