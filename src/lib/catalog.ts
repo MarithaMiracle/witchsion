@@ -2,8 +2,6 @@
  * Witchsion catalogue.
  *
  * Pricing and product names sourced from the brand's published price lists.
- * All services are offered as spiritual, cultural, and entertainment
- * experiences. No specific supernatural outcome is guaranteed.
  */
 
 import oilImg from "@/assets/product-oil.jpg";
@@ -11,6 +9,9 @@ import jarImg from "@/assets/product-spelljar.jpg";
 import smudgeImg from "@/assets/product-smudge.jpg";
 import crystalImg from "@/assets/product-crystals.jpg";
 import tarotImg from "@/assets/service-tarot.jpg";
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+
 
 export type Currency = "NGN" | "USD";
 
@@ -267,7 +268,7 @@ export const services: Service[] = [
     duration: "30 min",
     blurb: "A broad reading on where you are now.",
     description:
-      "A focused general tarot reading covering current themes, blocks, and opportunities. Offered as a reflective, entertainment-focused practice.",
+      "A focused general tarot reading covering current themes, blocks, and opportunities.",
     image: tarotImg,
   },
   {
@@ -279,7 +280,7 @@ export const services: Service[] = [
     duration: "45 min",
     blurb: "A relational reading — self, partner, dynamic.",
     description:
-      "An in-depth tarot reading focused on relationships and emotional dynamics. For reflection and entertainment.",
+      "An in-depth tarot reading focused on relationships and emotional dynamics.",
     image: tarotImg,
   },
   {
@@ -291,7 +292,7 @@ export const services: Service[] = [
     duration: "60 min",
     blurb: "Deep reading honouring ancestral guidance.",
     description:
-      "An extended reading honouring ancestral themes. Offered as a cultural and spiritual practice.",
+      "An extended reading honouring ancestral themes.",
     image: tarotImg,
   },
   {
@@ -311,7 +312,7 @@ export const services: Service[] = [
     duration: "By arrangement",
     blurb: "Pricing depends on the working.",
     description:
-      "Discuss spell work — attraction, protection, reflection, road opening, success and abundance, and others — with the practitioner. Pricing depends on the scope and duration of the working. All offerings are spiritual / cultural in nature; no specific outcome is guaranteed.",
+      "Discuss spell work — attraction, protection, reflection, road opening, success and abundance, and others — with the practitioner. Pricing depends on the scope and duration of the working.",
     image: tarotImg,
   },
 ];
@@ -334,3 +335,93 @@ export function productsByCategory(categorySlug: string): Product[] {
 export function serviceBySlug(slug: string): Service | undefined {
   return services.find((s) => s.slug === slug);
 }
+
+// Pagination utility for static data
+function paginate<T>(items: T[], page: number, pageSize: number) {
+  const total = items.length;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  return {
+    items: items.slice(start, end),
+    total,
+    page,
+    pageSize
+  };
+}
+
+export const getProducts = createServerFn({ method: "GET" })
+  .inputValidator((data: unknown) => z.object({
+    page: z.number().min(1).default(1),
+    pageSize: z.number().min(1).max(20).default(12),
+    category: z.string().optional(),
+    search: z.string().optional(),
+    sortBy: z.enum(["created_at", "price", "name"]).default("name"),
+    sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  }).parse(data || { page: 1, pageSize: 12 }))
+  .handler(async ({ data: { page, pageSize, category, search, sortBy, sortOrder } }) => {
+    let filteredProducts = [...products];
+    if (category) {
+      filteredProducts = filteredProducts.filter(p => p.categorySlug === category);
+    }
+    
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredProducts = filteredProducts.filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        p.blurb.toLowerCase().includes(searchLower) ||
+        p.description.toLowerCase().includes(searchLower) ||
+        p.intention.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Sort the products
+    filteredProducts.sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === "price") {
+        comparison = a.price - b.price;
+      } else if (sortBy === "name") {
+        comparison = a.name.localeCompare(b.name);
+      }
+      // For "created_at", keep original order (since static data doesn't have it)
+      
+      return sortOrder === "desc" ? -comparison : comparison;
+    });
+    
+    const { items: paginatedProducts, total } = paginate(filteredProducts, page, pageSize);
+    
+    return {
+      products: paginatedProducts,
+      total,
+      page,
+      pageSize,
+    };
+  });
+
+export const getCategories = createServerFn({ method: "GET" }).handler(async () => {
+  return categories;
+});
+
+export const getProductBySlug = createServerFn({ method: "GET" })
+  .inputValidator((slug: string) => slug)
+  .handler(async ({ data: slug }) => {
+    return productBySlug(slug);
+  });
+
+export const getProductsByCategory = createServerFn({ method: "GET" })
+  .inputValidator((data: unknown) => z.object({
+    categorySlug: z.string(),
+    page: z.number().min(1).default(1),
+    pageSize: z.number().min(1).max(20).default(12),
+  }).parse(data))
+  .handler(async ({ data: { categorySlug, page, pageSize } }) => {
+    const filteredProducts = products.filter(p => p.categorySlug === categorySlug);
+    const { items: paginatedProducts, total } = paginate(filteredProducts, page, pageSize);
+    
+    return {
+      products: paginatedProducts,
+      total,
+      page,
+      pageSize,
+    };
+  });
+

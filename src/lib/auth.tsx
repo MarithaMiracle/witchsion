@@ -53,11 +53,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     isAdmin,
     async signIn(email, password) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("[signIn] Calling Supabase...", { email });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("[signIn] Response:", { data, error });
       return { error: error?.message };
     },
     async signUp(email, password, fullName) {
-      const { error } = await supabase.auth.signUp({
+      console.log("[signUp] Calling Supabase...", { email, fullName });
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -65,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: { full_name: fullName },
         },
       });
+      console.log("[signUp] Response:", { data, error });
       return { error: error?.message };
     },
     async signOut() {

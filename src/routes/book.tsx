@@ -4,12 +4,13 @@ import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format, addDays, startOfDay } from "date-fns";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { services, formatPrice } from "@/lib/catalog";
+import { formatPrice } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
-import { createBooking } from "@/lib/bookings.functions";
+import { getServices, createBookingWithPayment } from "@/lib/bookings.functions";
 
 export const Route = createFileRoute("/book")({
   head: () => ({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/book")({
       {
         name: "description",
         content:
-          "Book a tarot reading, spiritual consultation or spell-work conversation with Witchsion. Offered as cultural and entertainment practice.",
+          "Book a tarot reading, spiritual consultation or spell-work conversation with Witchsion.",
       },
       { property: "og:title", content: "Consultations & Readings — Witchsion" },
       {
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/book")({
 const SLOTS = ["10:00", "12:00", "14:00", "16:00", "18:00", "20:00"] as const;
 
 function BookPage() {
-  const [serviceSlug, setServiceSlug] = useState(services[0].slug);
+  const [serviceSlug, setServiceSlug] = useState<string | null>(null);
   const [day, setDay] = useState(0);
   const [slot, setSlot] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -44,15 +45,45 @@ function BookPage() {
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const submitBooking = useServerFn(createBooking);
+  const fetchServices = useServerFn(getServices);
+  const submitBooking = useServerFn(createBookingWithPayment);
+  
+  const servicesQuery = useQuery({ queryKey: ["services"], queryFn: () => fetchServices() });
+  const services = servicesQuery.data || [];
+  
+  useEffect(() => {
+    if (services.length && !serviceSlug) setServiceSlug(services[0].slug);
+  }, [services, serviceSlug]);
+  
+  if (servicesQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <SiteHeader />
+        <section className="mx-auto max-w-7xl px-6 py-20 text-center">
+          <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
+            sit with the witch
+          </span>
+          <h1 className="text-witchy mt-4 text-6xl md:text-8xl">consultations</h1>
+          <p className="font-serif mt-6 text-lg italic text-muted-foreground">
+            Reading the cards…
+          </p>
+        </section>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (user?.email && !email) setEmail(user.email);
   }, [user, email]);
 
   const selectedService = useMemo(
-    () => services.find((s) => s.slug === serviceSlug)!,
-    [serviceSlug],
+    () => {
+      if (!services.length) return null;
+      if (!serviceSlug) return services[0];
+      return services.find((s) => s.slug === serviceSlug) || services[0];
+    },
+    [serviceSlug, services],
   );
 
   const days = useMemo(
@@ -66,7 +97,7 @@ function BookPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!slot || !name || !email) {
+    if (!selectedService || !slot || !name || !email) {
       toast.error("Please complete every required field.");
       return;
     }
@@ -76,7 +107,7 @@ function BookPage() {
     }
     setBusy(true);
     try {
-      await submitBooking({
+      const result = await submitBooking({
         data: {
           serviceSlug: selectedService.slug,
           serviceName: selectedService.name,
@@ -91,12 +122,17 @@ function BookPage() {
           notes: notes || undefined,
         },
       });
-      toast.success("Request received", {
-        description: `We'll confirm your ${selectedService.name} on ${days[day].num} at ${slot} by email.`,
-      });
-      setSlot(null);
-      setName("");
-      setNotes("");
+      
+      if (result?.checkoutUrl) {
+        window.location.href = result.checkoutUrl;
+      } else {
+        toast.success("Booking confirmed!", {
+          description: `Your ${selectedService.name} on ${days[day].num} at ${slot} is confirmed!`,
+        });
+        setSlot(null);
+        setName("");
+        setNotes("");
+      }
     } catch (err: any) {
       toast.error(err?.message ?? "Could not save your booking.");
     } finally {
@@ -116,9 +152,7 @@ function BookPage() {
           </span>
           <h1 className="text-witchy mt-4 text-6xl md:text-8xl">consultations</h1>
           <p className="font-serif mt-4 max-w-2xl text-lg italic text-muted-foreground">
-            Tarot readings, spiritual guidance and spell-work conversations.
-            Sessions are private, reflective and offered as cultural and
-            entertainment practice.
+            Tarot readings, spiritual guidance and spell-work conversations. Sessions are private and reflective.
           </p>
         </div>
       </section>
@@ -244,12 +278,18 @@ function BookPage() {
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
               <CalendarIcon size={14} /> Your session
             </div>
-            <div className="font-serif mt-4 text-2xl italic">
-              {selectedService.name}
-            </div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              {selectedService.description}
-            </p>
+            {selectedService ? (
+              <>                
+                <div className="font-serif mt-4 text-2xl italic">
+                  {selectedService.name}
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {selectedService.description}
+                </p>
+              </>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground italic">Select a service to continue</p>
+            )}
 
             <div className="ornate-divider my-6 text-[10px] uppercase tracking-[0.3em]">
               <span>details</span>
@@ -280,7 +320,6 @@ function BookPage() {
 
             <p className="font-serif mt-6 text-xs italic text-muted-foreground">
               You'll receive a confirmation email with payment and call details.
-              Sessions are offered as cultural and entertainment practice.
             </p>
           </div>
         </aside>

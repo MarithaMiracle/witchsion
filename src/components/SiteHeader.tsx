@@ -1,21 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, ShoppingBag, User } from "lucide-react";
+import { Menu, X, ShoppingBag, User, Globe } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n.jsx"; // Or just "@/lib/i18n" after renaming file
 
-const nav = [
-  { to: "/", label: "Home" },
-  { to: "/shop", label: "Shop" },
-  { to: "/book", label: "Consultations" },
-  { to: "/about", label: "About" },
-  { to: "/how-to-order", label: "How To Order" },
-] as const;
+const navKeys = ["home", "shop", "consultations", "blog", "about", "howToOrder"] as const;
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const { count } = useCart();
   const { user } = useAuth();
+  const { t, language, setLanguage } = useI18n();
+
+  const nav = navKeys.map((key) => ({
+    to: key === "home" ? "/" : key === "consultations" ? "/book" : key === "howToOrder" ? "/how-to-order" : `/${key}`,
+    label: t(key),
+  }));
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl">
@@ -43,6 +45,35 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Language Switcher */}
+          <div className="relative">
+            <button
+              type="button"
+              className="flex items-center gap-1 p-2 text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setLangMenuOpen(!langMenuOpen)}
+              aria-label="Switch language"
+            >
+              <Globe size={16} />
+              <span className="text-xs uppercase tracking-[0.2em]">{language.toUpperCase()}</span>
+            </button>
+            {langMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 border border-border bg-background p-1 shadow-lg z-50">
+                {(['en', 'es', 'fr'] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => {
+                      setLanguage(lang);
+                      setLangMenuOpen(false);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-xs uppercase tracking-[0.2em] transition-colors ${language === lang ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    {lang.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Link
             to={user ? "/account" : "/auth"}
             className="p-2 text-muted-foreground transition-colors hover:text-foreground"

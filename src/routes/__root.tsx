@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
 import { supabase } from "@/integrations/supabase/client";
+import { I18nProvider } from "@/lib/i18n.jsx"; // Or just "@/lib/i18n" if we rename the file
 
 function NotFoundComponent() {
   return (
@@ -82,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Witchsion offers hand-charged oils, spell jars, spiritual baths, smudge, crystals and consultations. Spiritual, cultural and entertainment services for the modern witch.",
+          "Witchsion offers hand-charged oils, spell jars, spiritual baths, smudge, crystals and consultations for the modern witch.",
       },
       { name: "author", content: "Witchsion" },
       { name: "theme-color", content: "#0a0a14" },
@@ -102,6 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5e2dd8d9-4a64-48a7-af36-536afc991391/id-preview-64b5d77c--4e951005-4a65-4bb9-8d90-825c5a6dce56.lovable.app-1781474487048.png" },
     ],
     links: [
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -144,8 +146,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <Outlet />
-          <Toaster theme="dark" position="bottom-right" />
+          <I18nProvider>
+            <Outlet />
+            <Toaster theme="dark" position="bottom-right" />
+          </I18nProvider>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>

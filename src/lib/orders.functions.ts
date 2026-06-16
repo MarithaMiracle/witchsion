@@ -35,13 +35,27 @@ export const createCheckout = createServerFn({ method: "POST" })
       throw new Error("Stripe is not configured yet. Please use Paystack for now.");
     }
 
-    const currency = data.items[0].currency;
-    if (data.items.some((i) => i.currency !== currency)) {
+    const originalCurrency = data.items[0].currency;
+    if (data.items.some((i) => i.currency !== originalCurrency)) {
       throw new Error("All items must share a single currency.");
     }
 
-    const subtotal = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    const exchangeRate = Number(process.env.EXCHANGE_RATE_USD_TO_NGN || 1550);
+    const subtotalOriginal = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    
+    // Convert to NGN for Paystack
+    let subtotal: number;
+    let currency: "NGN";
+    if (originalCurrency === "USD") {
+      subtotal = Math.round(subtotalOriginal * exchangeRate);
+      currency = "NGN";
+    } else {
+      subtotal = subtotalOriginal;
+      currency = originalCurrency;
+    }
     const total = subtotal;
+    
+    console.log(`[orders] Original currency: ${originalCurrency}, original subtotal: ${subtotalOriginal}, converted to ${currency}: ${subtotal}`);
 
     const { data: order, error: orderErr } = await supabase
       .from("orders")
@@ -50,6 +64,9 @@ export const createCheckout = createServerFn({ method: "POST" })
         status: "pending",
         provider: data.provider,
         currency,
+        original_currency: originalCurrency,
+        exchange_rate: originalCurrency === "USD" ? exchangeRate : null,
+        subtotal_original: originalCurrency === "USD" ? subtotalOriginal : null,
         subtotal,
         shipping: 0,
         total,

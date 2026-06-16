@@ -19,7 +19,7 @@ export const Route = createFileRoute("/about")({
       {
         property: "og:description",
         content:
-          "A witch on a mission. Spiritual, cultural and entertainment offerings for everyone.",
+          "A witch on a mission.",
       },
     ],
   }),
@@ -99,15 +99,8 @@ function AboutPage() {
           </p>
         </div>
 
-        <div className="ornate-divider mt-20 text-[10px] uppercase tracking-[0.3em]">
-          <span>a note on practice</span>
-        </div>
-
         <p className="font-serif mt-8 text-pretty text-sm italic text-muted-foreground">
-          All offerings on this site — products, readings and consultations —
-          are presented as spiritual, cultural and entertainment practice. We
-          do not guarantee any specific supernatural outcome. You must be 18 or
-          older to purchase or book.
+          You must be 18 or older to purchase or book.
         </p>
       </section>
 

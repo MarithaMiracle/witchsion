@@ -8,8 +8,7 @@ export function SiteFooter() {
           <div className="md:col-span-2">
             <div className="text-witchy text-3xl tracking-wider">witchsion</div>
             <p className="font-serif mt-4 max-w-sm text-sm italic text-muted-foreground">
-              A witch on a mission. Spiritual, cultural and entertainment offerings —
-              never the washed-out version.
+              A witch on a mission.
             </p>
           </div>
 
@@ -44,9 +43,7 @@ export function SiteFooter() {
         <div className="mt-8 flex flex-col gap-3 text-[11px] text-muted-foreground md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Witchsion. All rights reserved.</p>
           <p className="max-w-xl text-pretty">
-            Offerings are presented as spiritual, cultural and entertainment
-            services. No specific supernatural outcome is guaranteed. You must be
-            18+ to purchase.
+            You must be 18+ to purchase.
           </p>
         </div>
       </div>

@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { format } from "date-fns";
 
 import forestHero from "@/assets/forest-hero.jpg";
 import owlArt from "@/assets/mystic-owl.png";
@@ -12,6 +15,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MysticBackground } from "@/components/MysticBackground";
 import { categories, services, formatPrice } from "@/lib/catalog";
+import { getPublishedContent } from "@/lib/content.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,7 +24,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Hand-charged oils, spell jars, spiritual baths, smudge, crystals and consultations from Witchsion. Spiritual, cultural and entertainment offerings.",
+          "Hand-charged oils, spell jars, spiritual baths, smudge, crystals and consultations from Witchsion.",
       },
       { property: "og:title", content: "Witchsion — A Witch on a Mission" },
       {
@@ -41,6 +45,12 @@ const featuredCategories = [
 ];
 
 function HomePage() {
+  const fetchContent = useServerFn(getPublishedContent);
+  const blogQuery = useQuery({ 
+    queryKey: ["home-blog"], 
+    queryFn: () => fetchContent({ data: { type: "blog", page: 1, pageSize: 3 } }) 
+  });
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
@@ -74,9 +84,7 @@ function HomePage() {
             className="animate-float-up font-serif max-w-xl text-pretty text-lg italic text-muted-foreground md:text-xl"
             style={{ animationDelay: "0.2s" }}
           >
-            Hand-charged oils, sealed spell jars, spiritual baths and quiet
-            consultations. Offered as spiritual, cultural and entertainment
-            practice — never the washed-out version.
+            Hand-charged oils, sealed spell jars, spiritual baths and quiet consultations.
           </p>
 
           <div
@@ -168,9 +176,7 @@ function HomePage() {
               readings &amp; consultations
             </h2>
             <p className="font-serif mt-6 max-w-xl text-pretty text-lg italic text-muted-foreground">
-              Tarot, spiritual guidance and spell-work consultations. Sessions
-              are reflective, cultural and entertainment-focused — bring your
-              question, leave with perspective.
+              Tarot, spiritual guidance and spell-work consultations. Bring your question, leave with perspective.
             </p>
 
             <ul className="mt-10 divide-y divide-border/40 border-y border-border/40">
@@ -209,13 +215,73 @@ function HomePage() {
           she who wields it."
         </p>
         <p className="font-serif mt-8 text-base italic text-muted-foreground">
-          Witchsion is open to anyone, irrespective of age, status, race,
-          religion or ethnicity. Everything here is offered as spiritual,
-          cultural and entertainment practice.
+          Witchsion is open to anyone, irrespective of age, status, race, religion or ethnicity.
         </p>
       </section>
 
-      {/* ALL CATEGORIES */}
+      {/* Latest Blog Posts */}
+      <section className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="mb-12 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
+              from the grimoire
+            </span>
+            <h2 className="text-witchy mt-3 text-5xl md:text-6xl">latest insights</h2>
+          </div>
+          <Link
+            to="/blog"
+            className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View all posts <ArrowRight size={11} className="inline ml-1" />
+          </Link>
+        </div>
+
+        {blogQuery.isLoading ? (
+          <p className="text-sm text-muted-foreground">Unveiling the latest insights…</p>
+        ) : blogQuery.data?.content.length === 0 ? (
+          <p className="font-serif text-base italic text-muted-foreground">
+            No posts yet. Check back soon for mystical insights!
+          </p>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-3">
+            {blogQuery.data?.content.map((post) => (
+              <Link
+                key={post.id}
+                to="/blog/$slug"
+                params={{ slug: post.slug }}
+                className="group block"
+              >
+                {post.image && (
+                  <div className="aspect-[16/9] overflow-hidden bg-card mb-4">
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover opacity-80 transition-all duration-700 group-hover:opacity-100 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                  {post.published_at && (
+                    <span>{format(new Date(post.published_at), "d MMM yyyy")}</span>
+                  )}
+                </div>
+                <h3 className="text-witchy mt-3 text-2xl group-hover:underline">{post.title}</h3>
+                {post.excerpt && (
+                  <p className="font-serif mt-3 text-base italic text-muted-foreground">
+                    {post.excerpt}
+                  </p>
+                )}
+                <div className="mt-4 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground transition-colors group-hover:text-foreground">
+                  Read more <ArrowRight size={11} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* All Categories */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
         <div className="grid gap-px bg-border md:grid-cols-3">
           {categories.map((c) => (

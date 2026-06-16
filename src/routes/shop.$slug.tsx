@@ -1,31 +1,17 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { Minus, Plus, ArrowLeft } from "lucide-react";
+import { Minus, Plus, ArrowLeft, Heart } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import { productBySlug, products, formatPrice } from "@/lib/catalog";
+import { getProductBySlug, getProducts, formatPrice } from "@/lib/catalog";
+import { getReviewsForProduct, createReview } from "@/lib/reviews.functions";
+import { getMyWishlist, addToWishlist, removeFromWishlist } from "@/lib/wishlist.functions";
+import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/shop/$slug")({
-  loader: ({ params }) => {
-    const product = productBySlug(params.slug);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => {
-    const p = loaderData?.product;
-    return {
-      meta: p
-        ? [
-            { title: `${p.name} — Witchsion` },
-            { name: "description", content: p.description },
-            { property: "og:title", content: `${p.name} — Witchsion` },
-            { property: "og:description", content: p.description },
-            { property: "og:image", content: p.image },
-            { name: "twitter:image", content: p.image },
-          ]
-        : [{ title: "Product — Witchsion" }],
-    };
-  },
   component: ProductPage,
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center text-center">
@@ -40,13 +26,51 @@ export const Route = createFileRoute("/shop/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const { user } = useAuth();
   const [qty, setQty] = useState(1);
+  const queryClient = useQueryClient();
   const { add } = useCart();
+  const fetchProduct = useServerFn(getProductBySlug);
+  const fetchWishlist = useServerFn(getMyWishlist);
+  const addWishlistFn = useServerFn(addToWishlist);
+  const removeWishlistFn = useServerFn(removeFromWishlist);
 
-  const related = products
-    .filter((p) => p.categorySlug === product.categorySlug && p.slug !== product.slug)
-    .slice(0, 4);
+  const productQuery = useQuery({ 
+    queryKey: ["product", slug], 
+    queryFn: () => fetchProduct({ data: slug })
+  });
+  const wishlistQuery = useQuery({ 
+    queryKey: ["my-wishlist"], 
+    queryFn: () => fetchWishlist(),
+    enabled: !!user
+  });
+  const fetchReviews = useServerFn(getReviewsForProduct);
+  const submitReviewFn = useServerFn(createReview);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const reviewsQuery = useQuery({ 
+    queryKey: ["product-reviews", product?.id, reviewsPage], 
+    queryFn: () => fetchReviews({ data: { productId: product?.id!, page: reviewsPage, pageSize: 5 } }),
+    enabled: !!product?.id
+  });
+
+  if (productQuery.isLoading) return <div className="min-h-screen bg-background text-foreground p-6">Loading…</div>;
+  if (productQuery.error || !productQuery.data) throw notFound();
+  const product = productQuery.data;
+
+  const isInWishlist = !!wishlistQuery.data?.some(item => item.product_id === product.id);
+
+  const relatedQuery = useQuery({ 
+    queryKey: ["related-products", product.category_slug], 
+    queryFn: async () => {
+      const fetchProductsFn = useServerFn(getProducts);
+      const result = await fetchProductsFn({ data: { category: product.category_slug, pageSize: 5 } });
+      return result?.products.filter((p: any) => p.id !== product.id).slice(0, 4);
+    },
+    enabled: !!product
+  });
+
+  const related = relatedQuery.data || [];
 
   return (
     <main>
@@ -74,7 +98,7 @@ function ProductPage() {
         {/* Details */}
         <div className="flex flex-col">
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
-            {product.category}
+            {product.category?.name || product.category_slug}
           </span>
           <h1 className="text-witchy mt-3 text-balance text-5xl leading-tight md:text-6xl">
             {product.name}
@@ -94,14 +118,14 @@ function ProductPage() {
                 Suggested use
               </div>
               <ul className="font-serif mt-3 list-disc space-y-1 pl-5 italic">
-                {product.use.map((u: string) => (
+                {product.use_case?.map((u: string) => (
                   <li key={u}>{u}</li>
                 ))}
               </ul>
             </div>
           </div>
 
-          {/* Qty + Add */}
+          {/* Qty + Add + Wishlist */}
           <div className="mt-12 flex items-stretch gap-3">
             <div className="flex items-center border border-border">
               <button
@@ -130,14 +154,189 @@ function ProductPage() {
             >
               Add to bag
             </button>
+
+            {user && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    if (isInWishlist) {
+                      await removeWishlistFn({ data: { productId: product.id } });
+                      toast.success("Removed from wishlist");
+                    } else {
+                      await addWishlistFn({ data: { productId: product.id } });
+                      toast.success("Added to wishlist");
+                    }
+                    queryClient.invalidateQueries({ queryKey: ["my-wishlist"] });
+                  } catch (err) {
+                    toast.error("Failed to update wishlist");
+                  }
+                }}
+                className="px-4 py-4 border border-border text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <Heart size={18} fill={isInWishlist ? "currentColor" : "none"} />
+              </button>
+            )}
           </div>
 
           <p className="font-serif mt-6 text-xs italic text-muted-foreground">
-            Prepared on order. Spiritual, cultural and entertainment offering —
-            no specific outcome is guaranteed.
+            Prepared on order.
           </p>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      <section className="border-t border-border/40 bg-card/30 px-6 py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-witchy text-4xl">Reviews</h2>
+              {reviewsQuery.data?.avgRating && (
+                <p className="font-serif mt-2 text-lg italic text-muted-foreground">
+                  {reviewsQuery.data.avgRating} out of 5 stars • {reviewsQuery.data.total} reviews
+                </p>
+              )}
+            </div>
+            {user && (
+              <button
+                onClick={() => document.getElementById("review-form")?.scrollIntoView({ behavior: "smooth" })}
+                className="px-6 py-3 border border-foreground text-xs uppercase tracking-[0.2em] hover:bg-foreground hover:text-background transition-colors"
+              >
+                Leave a Review
+              </button>
+            )}
+          </div>
+
+          {/* Review List */}
+          {reviewsQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading reviews…</p>
+          ) : !reviewsQuery.data?.reviews.length ? (
+            <p className="font-serif text-lg italic text-muted-foreground">No reviews yet. Be the first!</p>
+          ) : (
+            <div className="space-y-8">
+              {reviewsQuery.data.reviews.map((review) => (
+                <div key={review.id} className="border border-border bg-card/40 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                        {review.profiles?.full_name || "Anonymous"}
+                      </div>
+                      {review.title && <div className="font-serif text-lg italic mt-1">{review.title}</div>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={i < review.rating ? "text-foreground" : "text-muted-foreground opacity-30"}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{review.content}</p>
+                  {review.is_verified && (
+                    <div className="mt-3 text-[10px] uppercase tracking-[0.2em] text-green-600">✓ Verified Purchase</div>
+                  )}
+                </div>
+              ))}
+
+              {/* Reviews Pagination */}
+              {reviewsQuery.data.total > 5 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                  <button
+                    onClick={() => setReviewsPage(Math.max(1, reviewsPage - 1))}
+                    disabled={reviewsPage === 1}
+                    className="px-4 py-2 border border-border text-xs uppercase tracking-[0.2em] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-muted-foreground">
+                    Page {reviewsPage} of {Math.ceil(reviewsQuery.data.total / 5)}
+                  </span>
+                  <button
+                    onClick={() => setReviewsPage(reviewsPage + 1)}
+                    disabled={reviewsPage >= Math.ceil(reviewsQuery.data.total / 5)}
+                    className="px-4 py-2 border border-border text-xs uppercase tracking-[0.2em] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Review Form */}
+          {user && (
+            <div id="review-form" className="mt-16 border border-border bg-card/40 p-8">
+              <h3 className="text-witchy text-2xl mb-6">Leave a Review</h3>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  try {
+                    await submitReviewFn({
+                      data: {
+                        productId: product?.id!,
+                        rating: Number(formData.get("rating")),
+                        title: formData.get("title") as string || undefined,
+                        content: formData.get("content") as string
+                      }
+                    });
+                    toast.success("Review submitted!");
+                    queryClient.invalidateQueries({ queryKey: ["product-reviews", product?.id] });
+                    e.currentTarget.reset();
+                  } catch (err) {
+                    toast.error("Failed to submit review");
+                  }
+                }}
+                className="space-y-6"
+              >
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Rating</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <label key={star} className="cursor-pointer">
+                        <input
+                          type="radio"
+                          name="rating"
+                          value={star}
+                          required
+                          className="sr-only"
+                        />
+                        <span className="text-3xl hover:scale-110 transition-transform block">★</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Title (optional)</label>
+                  <input
+                    name="title"
+                    type="text"
+                    className="w-full bg-transparent border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground"
+                    placeholder="What did you think?"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Review</label>
+                  <textarea
+                    name="content"
+                    required
+                    rows={5}
+                    className="w-full bg-transparent border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground"
+                    placeholder="Tell us about your experience..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="bg-foreground px-8 py-4 text-xs uppercase tracking-[0.2em] text-background hover:opacity-90 transition-opacity"
+                >
+                  Submit Review
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Related */}
       {related.length > 0 && (
