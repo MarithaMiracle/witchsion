@@ -45,7 +45,7 @@ export function apiDevPlugin(): Plugin {
             return;
           }
 
-          const { handleRpc } = await server.ssrLoadModule("/api/_lib/rpc-handler.ts");
+          const { handleRpc } = await server.ssrLoadModule("/api/lib/rpc-handler.ts");
           const result = await handleRpc(fn, data, req.headers.authorization ?? null);
           sendJson(res, 200, result);
         } catch (err) {
