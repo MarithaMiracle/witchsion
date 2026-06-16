@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export const config = {
@@ -48,7 +49,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).send("ok");
   }
 
-  const { supabaseAdmin } = await import("../src/integrations/supabase/client.server.js");
+  const url = process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.error("[paystack-webhook] Missing Supabase env");
+    return res.status(500).send("not configured");
+  }
+  const supabaseAdmin = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
   if (event.event === "charge.success") {
     await supabaseAdmin.from("orders").update({ status: "paid" }).eq("provider_ref", reference);

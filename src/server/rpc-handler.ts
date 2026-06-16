@@ -1,1 +1,1 @@
-export { handleRpc } from "../../api/lib/rpc-handler";
+export { handleRpc } from "../../server/rpc/rpc-handler";

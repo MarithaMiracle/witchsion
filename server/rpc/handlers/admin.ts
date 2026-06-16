@@ -64,7 +64,7 @@ export const adminGetOverview: HandlerDef = {
         .from("orders")
         .select("*, order_items(*)", { count: "exact" })
         .order("created_at", { ascending: false }),
-      supabaseAdmin.from("order_items").select("*, products(name, image)"),
+      supabaseAdmin.from("order_items").select("*"),
     ]);
 
     const allPaidOrders = (allOrders.data ?? []).filter((o) => o.status === "paid");
@@ -80,17 +80,19 @@ export const adminGetOverview: HandlerDef = {
       { count: number; revenue: number; name?: string; image?: string }
     >();
     (allOrderItems.data ?? []).forEach((item) => {
-      if (!item.product_id) return;
-      const existing = productSales.get(item.product_id) || {
+      const key = item.product_slug;
+      if (!key) return;
+      const existing = productSales.get(key) || {
         count: 0,
         revenue: 0,
-        name: item.products?.name,
-        image: item.products?.image,
+        name: item.product_name,
+        image: item.image ?? undefined,
       };
-      productSales.set(item.product_id, {
+      productSales.set(key, {
         ...existing,
         count: existing.count + (item.quantity || 1),
-        revenue: existing.revenue + Number(item.price_total || item.price || 0),
+        revenue:
+          existing.revenue + Number(item.unit_price || 0) * (item.quantity || 1),
       });
     });
 

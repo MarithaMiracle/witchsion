@@ -1,9 +1,9 @@
 import * as esbuild from "esbuild";
 
-// Bundle all RPC handlers into a single serverless function (api/rpc.mjs).
-// Vercel ignores underscore-prefixed api folders and won't resolve multi-file imports.
+// Bundle RPC handlers into a single serverless function.
+// Source lives in server/rpc (NOT under api/) so Vercel won't typecheck/deploy each handler.
 await esbuild.build({
-  entryPoints: ["api/lib/rpc-entry.ts"],
+  entryPoints: ["server/rpc/rpc-entry.ts"],
   bundle: true,
   platform: "node",
   target: "node20",
