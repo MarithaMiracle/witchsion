@@ -6,11 +6,12 @@ import {
   categories,
   productBySlug,
   paginateProducts,
+  defaultProductImage,
 } from "../../../src/lib/catalog-data";
 
 const ProductsInputSchema = z.object({
   page: z.number().min(1).default(1),
-  pageSize: z.number().min(1).max(20).default(12),
+  pageSize: z.number().min(1).max(200).default(12),
   category: z.string().optional(),
   search: z.string().optional(),
   sortBy: z.enum(["created_at", "price", "name"]).default("name"),
@@ -74,7 +75,7 @@ export const getProducts: HandlerDef = {
           return {
             ...staticP,
             ...r,
-            image: r.image || staticP?.image,
+            image: r.image || staticP?.image || defaultProductImage,
             category: (r.categories as { name?: string })?.name || staticP?.category || r.category_slug,
             categorySlug: r.category_slug || staticP?.categorySlug,
           };
@@ -155,7 +156,7 @@ export const getProducts: HandlerDef = {
         return {
           ...staticP,
           ...r,
-          image: r.image || staticP?.image,
+          image: r.image || staticP?.image || defaultProductImage,
           category:
             (r.categories as { name?: string })?.name || staticP?.category || r.category_slug,
           categorySlug: r.category_slug || staticP?.categorySlug,
@@ -217,7 +218,7 @@ export const getProductBySlug: HandlerDef = {
         return {
           ...staticProduct,
           ...dbProduct,
-          image: dbProduct.image || staticProduct?.image,
+          image: dbProduct.image || staticProduct?.image || defaultProductImage,
           category_slug: dbProduct.category_slug || staticProduct?.categorySlug,
           category:
             dbProduct.categories?.name || staticProduct?.category || dbProduct.category_slug,
@@ -237,7 +238,7 @@ export const getProductsByCategory: HandlerDef = {
       .object({
         categorySlug: z.string(),
         page: z.number().min(1).default(1),
-        pageSize: z.number().min(1).max(20).default(12),
+        pageSize: z.number().min(1).max(200).default(12),
       })
       .parse(data);
     const filteredProducts = products.filter((p) => p.categorySlug === categorySlug);

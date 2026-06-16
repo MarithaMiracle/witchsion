@@ -4,6 +4,7 @@ const jarImg = "/assets/product-spelljar.jpg";
 const smudgeImg = "/assets/product-smudge.jpg";
 const crystalImg = "/assets/product-crystals.jpg";
 const tarotImg = "/assets/service-tarot.jpg";
+export const defaultProductImage = oilImg;
 export type Currency = "NGN" | "USD";
 
 export type Product = {

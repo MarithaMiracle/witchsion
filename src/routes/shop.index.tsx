@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { formatPrice } from "@/lib/catalog";
 import { getCategories as fetchCategoriesApi, getProducts as fetchProductsApi } from "@/lib/catalog-api";
+import defaultProductImg from "@/assets/product-oil.jpg";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 const searchSchema = z.object({
@@ -198,7 +199,7 @@ function ShopIndex() {
               >
                 <div className="relative aspect-square overflow-hidden bg-card">
                   <img
-                    src={p.image}
+                    src={p.image || defaultProductImg}
                     alt={p.name}
                     loading="lazy"
                     className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105"

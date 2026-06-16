@@ -385,54 +385,7 @@ export type Database = {
         }
         Relationships: []
       }
-      product_reviews: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          is_verified: boolean
-          product_id: string
-          rating: number
-          title: string | null
-          updated_at: string
-          user_id: string
-          video_url: string | null
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          is_verified?: boolean
-          product_id: string
-          rating: number
-          title?: string | null
-          updated_at?: string
-          user_id: string
-          video_url?: string | null
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          is_verified?: boolean
-          product_id?: string
-          rating?: number
-          title?: string | null
-          updated_at?: string
-          user_id?: string
-          video_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_reviews_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      products: {
+      profiles: {
         Row: {
           blurb: string | null
           category_id: string

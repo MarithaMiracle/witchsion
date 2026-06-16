@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { formatPrice } from "@/lib/catalog";
 import { getProductBySlug, getProducts } from "@/lib/catalog-api";
 import defaultProductImg from "@/assets/product-oil.jpg";
-import { getReviewsForProduct, createReview } from "@/lib/reviews.functions";
 import { getMyWishlist, addToWishlist, removeFromWishlist } from "@/lib/wishlist.functions";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
@@ -29,8 +28,6 @@ export const Route = createFileRoute("/shop/$slug")({
 
 function ProductPage() {
   const { slug } = Route.useParams();
-  // Key the inner component by slug so navigation always remounts it and
-  // prevents hook-order mismatch between renders.
   return <ProductPageInner key={slug} slug={slug} />;
 }
 
@@ -45,50 +42,53 @@ function ProductPageInner({ slug }: { slug: string }) {
   const addWishlistFn = useApiFn(addToWishlist);
   const removeWishlistFn = useApiFn(removeFromWishlist);
 
-  const productQuery = useQuery({ 
-    queryKey: ["product", slug], 
-    queryFn: () => fetchProduct({ data: slug })
+  const productQuery = useQuery({
+    queryKey: ["product", slug],
+    queryFn: () => fetchProduct({ data: slug }),
   });
-  const wishlistQuery = useQuery({ 
-    queryKey: ["my-wishlist"], 
+  const wishlistQuery = useQuery({
+    queryKey: ["my-wishlist"],
     queryFn: () => fetchWishlist(),
-    enabled: !!user
-  });
-  const fetchReviews = useApiFn(getReviewsForProduct);
-  const submitReviewFn = useApiFn(createReview);
-  const [reviewsPage, setReviewsPage] = useState(1);
-  const reviewsQuery = useQuery({ 
-    queryKey: ["product-reviews", productQuery.data?.id, reviewsPage], 
-    queryFn: () => fetchReviews({ data: { productId: productQuery.data?.id!, page: reviewsPage, pageSize: 5 } }),
-    enabled: !!productQuery.data?.id
+    enabled: !!user,
   });
 
-  const allProductsQuery = useQuery({ queryKey: ["all-products-list"], queryFn: () => fetchAllProductsFn({ data: { page: 1, pageSize: 200 } }) });
+  const allProductsQuery = useQuery({
+    queryKey: ["all-products-list"],
+    queryFn: () => fetchAllProductsFn({ data: { page: 1, pageSize: 200 } }),
+  });
 
-  // Related products query must be declared before any early returns so
-  // the hook order remains stable between server and client renders.
   const relatedQuery = useQuery({
     queryKey: ["related-products", productQuery.data?.category_slug],
     queryFn: async () => {
       const prod = productQuery.data;
       if (!prod) return [];
-      const result = await fetchAllProductsFn({ data: { category: prod.category_slug, pageSize: 5 } });
-      return result?.products.filter((p: any) => p.id !== prod.id).slice(0, 4) || [];
+      const result = await fetchAllProductsFn({
+        data: { category: prod.category_slug, page: 1, pageSize: 20 },
+      });
+      return result?.products.filter((p: { id?: string }) => p.id !== prod.id).slice(0, 4) || [];
     },
-    enabled: !!productQuery.data
+    enabled: !!productQuery.data,
   });
 
-  if (productQuery.isLoading) return <div className="min-h-screen bg-background text-foreground p-6">Loading…</div>;
+  if (productQuery.isLoading) {
+    return <div className="min-h-screen bg-background text-foreground p-6">Loading…</div>;
+  }
   if (productQuery.error || !productQuery.data) {
     return (
       <main className="min-h-screen bg-background text-foreground p-6">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-witchy text-4xl mb-4">Not found</h1>
           <p className="mb-4 text-muted-foreground">We couldn't find that item in the apothecary.</p>
-          <p className="mb-6 text-sm text-muted-foreground">Requested slug: <strong>{slug}</strong></p>
+          <p className="mb-6 text-sm text-muted-foreground">
+            Requested slug: <strong>{slug}</strong>
+          </p>
           <div className="flex items-center justify-center gap-4 mb-6">
-            <Link to="/shop" className="underline">Back to shop</Link>
-            <Link to="/shop/" className="underline">Browse all products</Link>
+            <Link to="/shop" className="underline">
+              Back to shop
+            </Link>
+            <Link to="/shop/" className="underline">
+              Browse all products
+            </Link>
           </div>
           <div className="mt-6 text-left">
             <h3 className="text-witchy text-2xl mb-4">Available products</h3>
@@ -96,9 +96,11 @@ function ProductPageInner({ slug }: { slug: string }) {
               <p className="text-sm text-muted-foreground">Loading available products…</p>
             ) : (
               <ul className="grid gap-2 sm:grid-cols-2">
-                {allProductsQuery.data?.products.map((p: any) => (
+                {allProductsQuery.data?.products.map((p: { slug: string; name: string }) => (
                   <li key={p.slug}>
-                    <Link to="/shop/$slug" params={{ slug: p.slug }} className="underline">{p.name} - {p.slug}</Link>
+                    <Link to="/shop/$slug" params={{ slug: p.slug }} className="underline">
+                      {p.name} - {p.slug}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -110,9 +112,10 @@ function ProductPageInner({ slug }: { slug: string }) {
   }
   const product = productQuery.data;
 
-  const isInWishlist = !!wishlistQuery.data?.some(item => item.product_id === product?.id);
-
+  const isInWishlist = !!wishlistQuery.data?.some((item) => item.product_id === product?.id);
   const related = relatedQuery.data || [];
+  const productImage =
+    product.image || (product.images && product.images[0]) || defaultProductImg;
 
   return (
     <main>
@@ -126,10 +129,9 @@ function ProductPageInner({ slug }: { slug: string }) {
       </div>
 
       <div className="mx-auto grid max-w-7xl gap-12 px-6 pb-24 lg:grid-cols-2 lg:gap-20">
-        {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-card">
           <img
-            src={product.image || (product.images && product.images[0]) || defaultProductImg}
+            src={productImage}
             alt={product.name}
             width={1024}
             height={1024}
@@ -137,7 +139,6 @@ function ProductPageInner({ slug }: { slug: string }) {
           />
         </div>
 
-        {/* Details */}
         <div className="flex flex-col">
           <span className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
             {product.category?.name || product.category_slug}
@@ -145,9 +146,7 @@ function ProductPageInner({ slug }: { slug: string }) {
           <h1 className="text-witchy mt-3 text-balance text-5xl leading-tight md:text-6xl">
             {product.name}
           </h1>
-          <p className="font-serif mt-4 text-lg italic text-muted-foreground">
-            {product.blurb}
-          </p>
+          <p className="font-serif mt-4 text-lg italic text-muted-foreground">{product.blurb}</p>
 
           <div className="mt-8 font-serif text-3xl text-foreground">
             {formatPrice(product.price, product.currency)}
@@ -160,14 +159,13 @@ function ProductPageInner({ slug }: { slug: string }) {
                 Suggested use
               </div>
               <ul className="font-serif mt-3 list-disc space-y-1 pl-5 italic">
-                {product.use_case?.map((u: string) => (
+                {(product.use_case ?? product.use)?.map((u: string) => (
                   <li key={u}>{u}</li>
                 ))}
               </ul>
             </div>
           </div>
 
-          {/* Qty + Add + Wishlist */}
           <div className="mt-12 flex items-stretch gap-3">
             <div className="flex items-center border border-border">
               <button
@@ -210,7 +208,7 @@ function ProductPageInner({ slug }: { slug: string }) {
                       toast.success("Added to wishlist");
                     }
                     queryClient.invalidateQueries({ queryKey: ["my-wishlist"] });
-                  } catch (err) {
+                  } catch {
                     toast.error("Failed to update wishlist");
                   }
                 }}
@@ -222,165 +220,10 @@ function ProductPageInner({ slug }: { slug: string }) {
             )}
           </div>
 
-          <p className="font-serif mt-6 text-xs italic text-muted-foreground">
-            Prepared on order.
-          </p>
+          <p className="font-serif mt-6 text-xs italic text-muted-foreground">Prepared on order.</p>
         </div>
       </div>
 
-      {/* Reviews Section */}
-      <section className="border-t border-border/40 bg-card/30 px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-witchy text-4xl">Reviews</h2>
-              {reviewsQuery.data?.avgRating && (
-                <p className="font-serif mt-2 text-lg italic text-muted-foreground">
-                  {reviewsQuery.data.avgRating} out of 5 stars • {reviewsQuery.data.total} reviews
-                </p>
-              )}
-            </div>
-            {user && (
-              <button
-                onClick={() => document.getElementById("review-form")?.scrollIntoView({ behavior: "smooth" })}
-                className="px-6 py-3 border border-foreground text-xs uppercase tracking-[0.2em] hover:bg-foreground hover:text-background transition-colors"
-              >
-                Leave a Review
-              </button>
-            )}
-          </div>
-
-          {/* Review List */}
-          {reviewsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading reviews…</p>
-          ) : !reviewsQuery.data?.reviews.length ? (
-            <p className="font-serif text-lg italic text-muted-foreground">No reviews yet. Be the first!</p>
-          ) : (
-            <div className="space-y-8">
-              {reviewsQuery.data.reviews.map((review) => (
-                <div key={review.id} className="border border-border bg-card/40 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                        {review.profiles?.full_name || "Anonymous"}
-                      </div>
-                      {review.title && <div className="font-serif text-lg italic mt-1">{review.title}</div>}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < review.rating ? "text-foreground" : "text-muted-foreground opacity-30"}>
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{review.content}</p>
-                  {review.is_verified && (
-                    <div className="mt-3 text-[10px] uppercase tracking-[0.2em] text-green-600">✓ Verified Purchase</div>
-                  )}
-                </div>
-              ))}
-
-              {/* Reviews Pagination */}
-              {reviewsQuery.data.total > 5 && (
-                <div className="flex items-center justify-center gap-2 mt-8">
-                  <button
-                    onClick={() => setReviewsPage(Math.max(1, reviewsPage - 1))}
-                    disabled={reviewsPage === 1}
-                    className="px-4 py-2 border border-border text-xs uppercase tracking-[0.2em] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-sm text-muted-foreground">
-                    Page {reviewsPage} of {Math.ceil(reviewsQuery.data.total / 5)}
-                  </span>
-                  <button
-                    onClick={() => setReviewsPage(reviewsPage + 1)}
-                    disabled={reviewsPage >= Math.ceil(reviewsQuery.data.total / 5)}
-                    className="px-4 py-2 border border-border text-xs uppercase tracking-[0.2em] hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Review Form */}
-          {user && (
-            <div id="review-form" className="mt-16 border border-border bg-card/40 p-8">
-              <h3 className="text-witchy text-2xl mb-6">Leave a Review</h3>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  try {
-                    await submitReviewFn({
-                      data: {
-                        productId: product?.id!,
-                        rating: Number(formData.get("rating")),
-                        title: formData.get("title") as string || undefined,
-                        content: formData.get("content") as string
-                      }
-                    });
-                    toast.success("Review submitted!");
-                    queryClient.invalidateQueries({ queryKey: ["product-reviews", product?.id] });
-                    e.currentTarget.reset();
-                  } catch (err) {
-                    toast.error("Failed to submit review");
-                  }
-                }}
-                className="space-y-6"
-              >
-                <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Rating</label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <label key={star} className="cursor-pointer">
-                        <input
-                          type="radio"
-                          name="rating"
-                          value={star}
-                          required
-                          className="sr-only"
-                        />
-                        <span className="text-3xl hover:scale-110 transition-transform block">★</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Title (optional)</label>
-                  <input
-                    name="title"
-                    type="text"
-                    className="w-full bg-transparent border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground"
-                    placeholder="What did you think?"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Review</label>
-                  <textarea
-                    name="content"
-                    required
-                    rows={5}
-                    className="w-full bg-transparent border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground"
-                    placeholder="Tell us about your experience..."
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-foreground px-8 py-4 text-xs uppercase tracking-[0.2em] text-background hover:opacity-90 transition-opacity"
-                >
-                  Submit Review
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Related */}
       {related.length > 0 && (
         <section className="border-t border-border/40 bg-card/30 px-6 py-20">
           <div className="mx-auto max-w-7xl">
@@ -395,7 +238,7 @@ function ProductPageInner({ slug }: { slug: string }) {
                 >
                   <div className="relative aspect-square overflow-hidden bg-background">
                     <img
-                      src={p.image}
+                      src={p.image || defaultProductImg}
                       alt={p.name}
                       loading="lazy"
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"

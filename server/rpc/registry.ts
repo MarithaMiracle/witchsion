@@ -5,7 +5,6 @@ import * as orders from "./handlers/orders";
 import * as bookings from "./handlers/bookings";
 import * as wishlist from "./handlers/wishlist";
 import * as community from "./handlers/community";
-import * as reviews from "./handlers/reviews";
 import * as admin from "./handlers/admin";
 import * as ai from "./handlers/ai";
 import * as aiConcierge from "./handlers/ai-concierge";
@@ -40,8 +39,6 @@ export const handlers: Record<string, HandlerDef> = {
   getCommunityPosts: community.getCommunityPosts,
   createPost: community.createPost,
   toggleReaction: community.toggleReaction,
-  getReviewsForProduct: reviews.getReviewsForProduct,
-  createReview: reviews.createReview,
   adminGetOverview: admin.adminGetOverview,
   adminUpdateOrderStatus: admin.adminUpdateOrderStatus,
   adminUpdateBookingStatus: admin.adminUpdateBookingStatus,
