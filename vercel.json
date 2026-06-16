@@ -1,12 +1,3 @@
 {
-    "outputDirectory": "dist/client",
-    "functions": {
-        "dist/server/server.js": {
-            "runtime": "nodejs20.x"
-        }
-    },
-    "routes": [{
-        "src": "/(.*)",
-        "dest": "/dist/server/server.js"
-    }]
+    "outputDirectory": "dist/client"
 }
