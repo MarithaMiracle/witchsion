@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { format } from "date-fns";
 
 import forestHero from "@/assets/forest-hero.jpg";
@@ -45,7 +45,7 @@ const featuredCategories = [
 ];
 
 function HomePage() {
-  const fetchContent = useServerFn(getPublishedContent);
+  const fetchContent = useApiFn(getPublishedContent);
   const blogQuery = useQuery({ 
     queryKey: ["home-blog"], 
     queryFn: () => fetchContent({ data: { type: "blog", page: 1, pageSize: 3 } }) 

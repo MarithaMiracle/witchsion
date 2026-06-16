@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as OrderConfirmationRouteImport } from './routes/order-confirmation'
 import { Route as HowToOrderRouteImport } from './routes/how-to-order'
@@ -30,13 +29,7 @@ import { Route as ResourcesSlugRouteImport } from './routes/resources.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
-import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -136,12 +129,6 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicPaystackWebhookRoute =
-  ApiPublicPaystackWebhookRouteImport.update({
-    id: '/api/public/paystack-webhook',
-    path: '/api/public/paystack-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -156,7 +143,6 @@ export interface FileRoutesByFullPath {
   '/how-to-order': typeof HowToOrderRoute
   '/order-confirmation': typeof OrderConfirmationRoute
   '/shop': typeof ShopRouteWithChildren
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -164,7 +150,6 @@ export interface FileRoutesByFullPath {
   '/shop/$slug': typeof ShopSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/shop/': typeof ShopIndexRoute
-  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -177,7 +162,6 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityRoute
   '/how-to-order': typeof HowToOrderRoute
   '/order-confirmation': typeof OrderConfirmationRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -185,7 +169,6 @@ export interface FileRoutesByTo {
   '/shop/$slug': typeof ShopSlugRoute
   '/blog': typeof BlogIndexRoute
   '/shop': typeof ShopIndexRoute
-  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -202,7 +185,6 @@ export interface FileRoutesById {
   '/how-to-order': typeof HowToOrderRoute
   '/order-confirmation': typeof OrderConfirmationRoute
   '/shop': typeof ShopRouteWithChildren
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -210,7 +192,6 @@ export interface FileRoutesById {
   '/shop/$slug': typeof ShopSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/shop/': typeof ShopIndexRoute
-  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -227,7 +208,6 @@ export interface FileRouteTypes {
     | '/how-to-order'
     | '/order-confirmation'
     | '/shop'
-    | '/sitemap.xml'
     | '/account'
     | '/admin'
     | '/blog/$slug'
@@ -235,7 +215,6 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/blog/'
     | '/shop/'
-    | '/api/public/paystack-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -248,7 +227,6 @@ export interface FileRouteTypes {
     | '/community'
     | '/how-to-order'
     | '/order-confirmation'
-    | '/sitemap.xml'
     | '/account'
     | '/admin'
     | '/blog/$slug'
@@ -256,7 +234,6 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/blog'
     | '/shop'
-    | '/api/public/paystack-webhook'
   id:
     | '__root__'
     | '/'
@@ -272,7 +249,6 @@ export interface FileRouteTypes {
     | '/how-to-order'
     | '/order-confirmation'
     | '/shop'
-    | '/sitemap.xml'
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/blog/$slug'
@@ -280,7 +256,6 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/blog/'
     | '/shop/'
-    | '/api/public/paystack-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -297,20 +272,11 @@ export interface RootRouteChildren {
   HowToOrderRoute: typeof HowToOrderRoute
   OrderConfirmationRoute: typeof OrderConfirmationRoute
   ShopRoute: typeof ShopRouteWithChildren
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
-  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -451,13 +417,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/paystack-webhook': {
-      id: '/api/public/paystack-webhook'
-      path: '/api/public/paystack-webhook'
-      fullPath: '/api/public/paystack-webhook'
-      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -512,20 +471,8 @@ const rootRouteChildren: RootRouteChildren = {
   HowToOrderRoute: HowToOrderRoute,
   OrderConfirmationRoute: OrderConfirmationRoute,
   ShopRoute: ShopRouteWithChildren,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
-  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

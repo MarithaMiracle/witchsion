@@ -1,7 +1,7 @@
 // /Users/decagon/witchsion/witchsion/src/routes/blog.tsx
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { format } from "date-fns";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/blog/")({
 });
 
 function BlogPage() {
-  const fetchContent = useServerFn(getPublishedContent);
+  const fetchContent = useApiFn(getPublishedContent);
   const [page, setPage] = useState(1);
   const pageSize = 5;
 

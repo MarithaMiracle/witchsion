@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { toast } from "sonner";
 
 import { SiteHeader } from "@/components/SiteHeader";
@@ -19,7 +19,7 @@ function CheckoutPage() {
   const { items, subtotal, currency, clear } = useCart();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const submit = useServerFn(createCheckout);
+  const submit = useApiFn(createCheckout);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

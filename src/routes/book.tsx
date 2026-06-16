@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format, addDays, startOfDay } from "date-fns";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { useQuery } from "@tanstack/react-query";
 
 import { SiteHeader } from "@/components/SiteHeader";
@@ -45,8 +45,8 @@ function BookPage() {
 
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const fetchServices = useServerFn(getServices);
-  const submitBooking = useServerFn(createBookingWithPayment);
+  const fetchServices = useApiFn(getServices);
+  const submitBooking = useApiFn(createBookingWithPayment);
   
   const servicesQuery = useQuery({ queryKey: ["services"], queryFn: () => fetchServices() });
   const services = servicesQuery.data || [];

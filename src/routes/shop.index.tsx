@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 
-import { getCategories, getProducts, formatPrice } from "@/lib/catalog";
+import { formatPrice } from "@/lib/catalog";
+import { getCategories as fetchCategoriesApi, getProducts as fetchProductsApi } from "@/lib/catalog-api";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 const searchSchema = z.object({
@@ -30,8 +31,8 @@ function ShopIndex() {
     setLocalSearch(search ?? "");
   }, [search]);
 
-  const fetchProductsFn = useServerFn(getProducts);
-  const fetchCategoriesFn = useServerFn(getCategories);
+  const fetchProductsFn = useApiFn(fetchProductsApi);
+  const fetchCategoriesFn = useApiFn(fetchCategoriesApi);
   
   const productsQuery = useQuery({ 
     queryKey: ["shop-products", category, page, search, sortBy, sortOrder], 

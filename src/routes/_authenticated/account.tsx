@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Heart } from "lucide-react";
@@ -27,7 +27,7 @@ function AccountPage() {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
-  const aiAdviceFn = useServerFn(getAIAdvice);
+  const aiAdviceFn = useApiFn(getAIAdvice);
 
   function renderChatContent(text: string) {
     if (!text) return null;
@@ -93,10 +93,10 @@ function AccountPage() {
       </>
     );
   }
-  const fetchOrders = useServerFn(listMyOrders);
-  const fetchBookings = useServerFn(listMyBookings);
-  const fetchWishlist = useServerFn(getMyWishlist);
-  const removeWishlistItem = useServerFn(removeFromWishlist);
+  const fetchOrders = useApiFn(listMyOrders);
+  const fetchBookings = useApiFn(listMyBookings);
+  const fetchWishlist = useApiFn(getMyWishlist);
+  const removeWishlistItem = useApiFn(removeFromWishlist);
 
   const ordersQuery = useQuery({ queryKey: ["my-orders"], queryFn: () => fetchOrders() });
   const bookingsQuery = useQuery({ queryKey: ["my-bookings"], queryFn: () => fetchBookings() });

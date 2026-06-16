@@ -1,7 +1,7 @@
 // /Users/decagon/witchsion/witchsion/src/routes/blog.$slug.tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Heart, ArrowLeft } from "lucide-react";
@@ -33,10 +33,10 @@ export const Route = createFileRoute("/blog/$slug")({
 
 function BlogPostPage() {
   const { slug } = Route.useParams();
-  const fetchContent = useServerFn(getContentBySlug);
+  const fetchContent = useApiFn(getContentBySlug);
   
-  const fetchLikes = useServerFn(getContentLikes);
-  const toggleLike = useServerFn(toggleContentLike);
+  const fetchLikes = useApiFn(getContentLikes);
+  const toggleLike = useApiFn(toggleContentLike);
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
@@ -46,7 +46,7 @@ function BlogPostPage() {
     queryFn: () => fetchContent({ data: { slug } }),
   });
 
-  const fetchPublished = useServerFn(getPublishedContent);
+  const fetchPublished = useApiFn(getPublishedContent);
   const relatedQuery = useQuery({
     queryKey: ["related-posts", contentQuery.data?.id],
     queryFn: () => fetchPublished({ data: { type: 'blog', page: 1, pageSize: 3 } }),

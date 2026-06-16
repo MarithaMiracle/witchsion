@@ -1,13 +1,19 @@
-import { defineConfig } from "@tanstack/start/config";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { apiDevPlugin } from "./vite-plugin-api-dev";
 
 export default defineConfig({
-  server: {
-    preset: "cloudflare-pages",
-    entry: "src/server.ts",
-  },
-  vite: {
-    build: {
-      outDir: "dist/client",
-    },
+  plugins: [
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
+    react(),
+    tailwindcss(),
+    tsconfigPaths(),
+    apiDevPlugin(),
+  ],
+  build: {
+    outDir: "dist",
   },
 });

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { X, MessageSquare, Mic, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,7 @@ export function AiConcierge() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const submitChat = useServerFn(chatWithConcierge);
+  const submitChat = useApiFn(chatWithConcierge);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

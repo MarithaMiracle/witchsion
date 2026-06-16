@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import React from "react";
 import { z } from "zod";
 
@@ -20,8 +20,8 @@ export const Route = createFileRoute("/order-confirmation")({
 
 function ConfirmationPage() {
   const { order } = useSearch({ from: "/order-confirmation" });
-  const fetchOrder = useServerFn(getOrder);
-  const verifyPayment = useServerFn(verifyOrderPayment);
+  const fetchOrder = useApiFn(getOrder);
+  const verifyPayment = useApiFn(verifyOrderPayment);
   const q = useQuery({
     queryKey: ["order", order],
     queryFn: () => fetchOrder({ data: { id: order! } }),

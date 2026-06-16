@@ -1,11 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { Minus, Plus, ArrowLeft, Heart } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { getProductBySlug, getProducts, formatPrice } from "@/lib/catalog";
+import { formatPrice } from "@/lib/catalog";
+import { getProductBySlug, getProducts } from "@/lib/catalog-api";
 import defaultProductImg from "@/assets/product-oil.jpg";
 import { getReviewsForProduct, createReview } from "@/lib/reviews.functions";
 import { getMyWishlist, addToWishlist, removeFromWishlist } from "@/lib/wishlist.functions";
@@ -38,11 +39,11 @@ function ProductPageInner({ slug }: { slug: string }) {
   const [qty, setQty] = useState(1);
   const queryClient = useQueryClient();
   const { add } = useCart();
-  const fetchProduct = useServerFn(getProductBySlug);
-  const fetchAllProductsFn = useServerFn(getProducts);
-  const fetchWishlist = useServerFn(getMyWishlist);
-  const addWishlistFn = useServerFn(addToWishlist);
-  const removeWishlistFn = useServerFn(removeFromWishlist);
+  const fetchProduct = useApiFn(getProductBySlug);
+  const fetchAllProductsFn = useApiFn(getProducts);
+  const fetchWishlist = useApiFn(getMyWishlist);
+  const addWishlistFn = useApiFn(addToWishlist);
+  const removeWishlistFn = useApiFn(removeFromWishlist);
 
   const productQuery = useQuery({ 
     queryKey: ["product", slug], 
@@ -53,8 +54,8 @@ function ProductPageInner({ slug }: { slug: string }) {
     queryFn: () => fetchWishlist(),
     enabled: !!user
   });
-  const fetchReviews = useServerFn(getReviewsForProduct);
-  const submitReviewFn = useServerFn(createReview);
+  const fetchReviews = useApiFn(getReviewsForProduct);
+  const submitReviewFn = useApiFn(createReview);
   const [reviewsPage, setReviewsPage] = useState(1);
   const reviewsQuery = useQuery({ 
     queryKey: ["product-reviews", productQuery.data?.id, reviewsPage], 

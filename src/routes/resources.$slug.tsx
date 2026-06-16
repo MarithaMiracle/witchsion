@@ -1,7 +1,7 @@
 // /Users/decagon/witchsion/witchsion/src/routes/resources.$slug.tsx
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { format } from "date-fns";
 
 import { SiteHeader } from "@/components/SiteHeader";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/resources/$slug")({
 
 function ResourcePage() {
   const { slug } = Route.useParams();
-  const fetchContent = useServerFn(getContentBySlug);
+  const fetchContent = useApiFn(getContentBySlug);
 
   const contentQuery = useQuery({
     queryKey: ["resource", slug],

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Heart } from "lucide-react";
@@ -28,10 +28,10 @@ function CommunityPage() {
   const [postsPage, setPostsPage] = useState(1);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
 
-  const fetchGroups = useServerFn(getCommunityGroups);
-  const fetchPosts = useServerFn(getCommunityPosts);
-  const createPostFn = useServerFn(createPost);
-  const toggleReactionFn = useServerFn(toggleReaction);
+  const fetchGroups = useApiFn(getCommunityGroups);
+  const fetchPosts = useApiFn(getCommunityPosts);
+  const createPostFn = useApiFn(createPost);
+  const toggleReactionFn = useApiFn(toggleReaction);
 
   const groupsQuery = useQuery({ queryKey: ["community-groups"], queryFn: () => fetchGroups() });
   const postsQuery = useQuery({ 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { useServerFn } from '@tanstack/react-start'
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { SiteHeader } from '@/components/SiteHeader'
 import { SiteFooter } from '@/components/SiteFooter'
 import { confirmBookingPayment } from '@/lib/bookings.functions'
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/booking-confirm')({
 
 function RouteComponent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'missing'>('loading')
-  const confirmFn = useServerFn(confirmBookingPayment)
+  const confirmFn = useApiFn(confirmBookingPayment)
   const appUrl = (import.meta as any).env?.VITE_APP_URL as string | undefined;
   const suggestedApp = appUrl || "http://localhost:5173";
 

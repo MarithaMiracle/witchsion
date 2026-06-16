@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useApiFn } from "@/lib/api/create-api-fn";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -53,16 +53,16 @@ function AdminPage() {
   const activeTab = search.tab;
   const setActiveTab = (tab: string) => navigate({ search: (prev) => ({ ...prev, tab }) });
   
-  const fetchOverview = useServerFn(adminGetOverview);
-  const fetchProducts = useServerFn(adminGetProducts);
-  const fetchCategories = useServerFn(adminGetCategories);
-  const fetchContent = useServerFn(adminGetAllContent);
-  const upsertContentFn = useServerFn(adminUpsertContent);
-  const deleteContentFn = useServerFn(adminDeleteContent);
-  const updateOrderStatus = useServerFn(adminUpdateOrderStatus);
-  const updateBookingStatus = useServerFn(adminUpdateBookingStatus);
-  const upsertProduct = useServerFn(adminUpsertProduct);
-  const deleteProduct = useServerFn(adminDeleteProduct);
+  const fetchOverview = useApiFn(adminGetOverview);
+  const fetchProducts = useApiFn(adminGetProducts);
+  const fetchCategories = useApiFn(adminGetCategories);
+  const fetchContent = useApiFn(adminGetAllContent);
+  const upsertContentFn = useApiFn(adminUpsertContent);
+  const deleteContentFn = useApiFn(adminDeleteContent);
+  const updateOrderStatus = useApiFn(adminUpdateOrderStatus);
+  const updateBookingStatus = useApiFn(adminUpdateBookingStatus);
+  const upsertProduct = useApiFn(adminUpsertProduct);
+  const deleteProduct = useApiFn(adminDeleteProduct);
   
   const pageSize = 20;
   const overviewQuery = useQuery({ 

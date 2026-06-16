@@ -10,7 +10,7 @@ import process from "node:process";
 // When to use which env-access pattern:
 //   - .server.ts module (this file): server-only helpers reused across
 //     handlers. Wrap reads in a function so they run per-request.
-//   - inline process.env inside a createServerFn handler: one-off reads
+//   - inline process.env inside a server handler: one-off reads
 //     not reused elsewhere.
 //   - import.meta.env.VITE_FOO: PUBLIC config readable from both client
 //     and server (analytics IDs, public URLs). Define in .env with the
