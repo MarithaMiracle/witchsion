@@ -7,7 +7,7 @@ export default defineConfig({
     },
     routers: {
       server: {
-        preset: "cloudflare-pages",
+        preset: "cloudflare-workers",
       },
     },
   },
