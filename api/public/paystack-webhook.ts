@@ -48,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).send("ok");
   }
 
-  const { supabaseAdmin } = await import("../src/integrations/supabase/client.server");
+  const { supabaseAdmin } = await import("../src/integrations/supabase/client.server.js");
 
   if (event.event === "charge.success") {
     await supabaseAdmin.from("orders").update({ status: "paid" }).eq("provider_ref", reference);

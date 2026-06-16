@@ -1,6 +1,6 @@
 import type { HandlerDef } from "../types";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "../../../src/integrations/supabase/client.server";
 
 export const getCommunityGroups: HandlerDef = {
   handler: async () => {

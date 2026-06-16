@@ -98,6 +98,8 @@ function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [editingContent, setEditingContent] = useState<any>(null);
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [deleteContentId, setDeleteContentId] = useState<string | null>(null);
 
   if (overviewQuery.isLoading || productsQuery.isLoading || categoriesQuery.isLoading || contentQuery.isLoading) {
     return (
@@ -203,14 +205,13 @@ function AdminPage() {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
     try {
       await deleteProduct({ data: { id } });
-      toast.success('Product deleted!');
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success("Product deleted!");
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     } catch (err) {
       console.error(err);
-      toast.error('Failed to delete product');
+      toast.error("Failed to delete product");
     }
   };
 
@@ -565,7 +566,7 @@ function AdminPage() {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDeleteProduct(p.id)}
+                            onClick={() => setDeleteProductId(p.id)}
                             className="text-xs uppercase tracking-widest hover:text-red-500 text-muted-foreground"
                           >
                             Delete
@@ -839,7 +840,10 @@ function AdminPage() {
                 <>
                   <button
                     onClick={() => {
-                      const hasEdits = editingContent && (editingContent.id || Object.values(editingContent || {}).some((v) => Boolean(v)));
+                      const hasEdits =
+                        editingContent &&
+                        (editingContent.id ||
+                          Object.values(editingContent || {}).some((v) => Boolean(v)));
                       if (hasEdits) {
                         setDiscardDialogOpen(true);
                         return;
@@ -850,28 +854,6 @@ function AdminPage() {
                   >
                     Add New Content
                   </button>
-
-                  <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          You have unsaved edits. Discard them and start a new content draft?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setDiscardDialogOpen(false)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => {
-                            setEditingContent({});
-                            setDiscardDialogOpen(false);
-                          }}
-                        >
-                          Discard and create
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </>
               </div>
 
@@ -955,6 +937,7 @@ function AdminPage() {
                     <div className="md:col-span-2">
                       <label className="block text-xs uppercase tracking-widest mb-2 text-muted-foreground">Content</label>
                       <RichTextEditor
+                        key={editingContent.id || editingContent.slug || "new"}
                         name="content"
                         defaultValue={editingContent.content}
                         required={true}
@@ -1030,17 +1013,7 @@ function AdminPage() {
                             Edit
                           </button>
                           <button
-                            onClick={async () => {
-                              if (confirm('Are you sure you want to delete this content?')) {
-                                try {
-                                  await deleteContentFn({ data: { id: c.id } });
-                                  toast.success('Content deleted');
-                                  queryClient.invalidateQueries({ queryKey: ['admin-content'] });
-                                } catch (err) {
-                                  toast.error('Failed to delete content');
-                                }
-                              }
-                            }}
+                            onClick={() => setDeleteContentId(c.id)}
                             className="text-xs uppercase tracking-widest text-red-500 hover:text-red-400"
                           >
                             Delete
@@ -1093,6 +1066,85 @@ function AdminPage() {
         </div>
       </section>
       <SiteFooter />
+
+      <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved edits. Discard them and start a new content draft?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setEditingContent({});
+                setDiscardDialogOpen(false);
+              }}
+            >
+              Discard and create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={!!deleteProductId}
+        onOpenChange={(open) => !open && setDeleteProductId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This cannot be undone. The product will be removed from the shop.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (deleteProductId) await handleDeleteProduct(deleteProductId);
+                setDeleteProductId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={!!deleteContentId}
+        onOpenChange={(open) => !open && setDeleteContentId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete content?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This cannot be undone. The blog post or resource will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!deleteContentId) return;
+                try {
+                  await deleteContentFn({ data: { id: deleteContentId } });
+                  toast.success("Content deleted");
+                  queryClient.invalidateQueries({ queryKey: ["admin-content"] });
+                } catch {
+                  toast.error("Failed to delete content");
+                }
+                setDeleteContentId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

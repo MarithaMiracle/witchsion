@@ -26,7 +26,7 @@ export const adminGetOverview: HandlerDef = {
   handler: async ({ data, context }) => {
     const input = AdminOverviewSchema.parse(data || { page: 1, pageSize: 20 });
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { page, pageSize, ordersSearch, ordersStatus, bookingsSearch, bookingsStatus } = input;
     const offset = (page - 1) * pageSize;
 
@@ -140,7 +140,7 @@ export const adminUpdateOrderStatus: HandlerDef = {
       })
       .parse(data);
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
       .update({ status: input.status })
@@ -162,7 +162,7 @@ export const adminUpdateBookingStatus: HandlerDef = {
       })
       .parse(data);
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { data: booking, error } = await supabaseAdmin
       .from("bookings")
       .update({ status: input.status })
@@ -186,7 +186,7 @@ export const adminGetProducts: HandlerDef = {
       })
       .parse(data || { page: 1, pageSize: 20 });
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { page, pageSize, search, category } = input;
     const offset = (page - 1) * pageSize;
 
@@ -217,7 +217,7 @@ export const adminGetCategories: HandlerDef = {
   auth: true,
   handler: async ({ context }) => {
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin.from("categories").select("*").order("name");
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -245,7 +245,7 @@ export const adminUpsertProduct: HandlerDef = {
       })
       .parse(data);
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { data: product, error } = await supabaseAdmin
       .from("products")
       .upsert(input)
@@ -261,7 +261,7 @@ export const adminDeleteProduct: HandlerDef = {
   handler: async ({ data, context }) => {
     const input = z.object({ id: z.string().uuid() }).parse(data);
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("products").delete().eq("id", input.id);
     if (error) throw new Error(error.message);
     return true;
@@ -280,7 +280,7 @@ export const adminUpsertCategory: HandlerDef = {
       })
       .parse(data);
     await assertAdmin(context!);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { data: category, error } = await supabaseAdmin
       .from("categories")
       .upsert(input)

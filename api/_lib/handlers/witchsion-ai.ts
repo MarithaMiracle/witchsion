@@ -1,6 +1,6 @@
 import type { HandlerDef } from "../types";
 import { z } from "zod";
-import { products, productBySlug, categories } from "@/lib/catalog";
+import { products, productBySlug, categories } from "../../../src/lib/catalog-data";
 import { getPublishedContent } from "./content";
 
 export const getAdvice: HandlerDef = {

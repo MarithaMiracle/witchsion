@@ -132,7 +132,7 @@ export const createCheckout: HandlerDef = {
       throw new Error(psJson.message || "Could not start payment.");
     }
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     await supabaseAdmin
       .from("orders")
       .update({
@@ -181,7 +181,7 @@ export const verifyOrderPayment: HandlerDef = {
     const paystackKey = process.env.PAYSTACK_SECRET_KEY;
     if (!paystackKey) throw new Error("PAYSTACK_SECRET_KEY not configured");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
     const { data: order, error: fetchErr } = await supabaseAdmin
       .from("orders")
       .select("id, provider_ref, status")

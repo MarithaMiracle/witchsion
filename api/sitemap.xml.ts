@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { products } from "../src/lib/catalog";
+import { products } from "../src/lib/catalog-data";
 
 const BASE_URL = process.env.VITE_APP_URL || "";
 

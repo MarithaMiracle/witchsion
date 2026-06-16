@@ -1,9 +1,9 @@
 import type { HandlerDef } from "../types";
 import { z } from "zod";
-import { services as staticServices } from "@/lib/catalog";
+import { services as staticServices } from "../../../src/lib/catalog-data";
 
 const getSupabaseAdmin = async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { supabaseAdmin } = await import("../../../src/integrations/supabase/client.server");
   return supabaseAdmin;
 };
 

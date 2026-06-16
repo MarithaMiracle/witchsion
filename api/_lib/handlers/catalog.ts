@@ -1,12 +1,12 @@
 import type { HandlerDef } from "../types";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseAdmin } from "../../../src/integrations/supabase/client.server";
 import {
   products,
   categories,
   productBySlug,
   paginateProducts,
-} from "@/lib/catalog";
+} from "../../../src/lib/catalog-data";
 
 const ProductsInputSchema = z.object({
   page: z.number().min(1).default(1),
